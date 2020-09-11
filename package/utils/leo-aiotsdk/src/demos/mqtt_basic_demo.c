@@ -39,7 +39,10 @@
 #include <sys/timerfd.h> //bytian
 #include <sys/resource.h> //bytian
 
+#include <time.h> //byxfwu
+
 #include <pthread.h>
+
 
 
 #include "aiot_state_api.h"
@@ -430,10 +433,15 @@ void demo_mqtt_event_handler(void *handle, const aiot_mqtt_event_t *event, void 
 /* MQTT默认消息处理回调, 当SDK从服务器收到MQTT消息时, 且无对应用户回调处理时被调用 */
 void demo_mqtt_default_recv_handler(void *handle, const aiot_mqtt_recv_t *packet, void *userdata)
 {
+	
+	time_t t;
+	struct tm *lt;
+	time(&t);
+	lt = localtime(&t);
 	//char *command = NULL;
     switch (packet->type) {
         case AIOT_MQTTRECV_HEARTBEAT_RESPONSE: {
-            printf("heartbeat response\n");
+            printf("%d/%d/%d %d:%d:%d  heartbeat response\n",lt->tm_year+1900, lt->tm_mon, lt->tm_mday, lt->tm_hour, lt->tm_min, lt->tm_sec);
             /* TODO: 处理服务器对心跳的回应, 一般不处理 */
         }
         break;
@@ -467,7 +475,7 @@ void demo_mqtt_default_recv_handler(void *handle, const aiot_mqtt_recv_t *packet
         break;
 
         default: {
-
+			printf("%d/%d/%d %d:%d:%d  22222222222222\n",lt->tm_year+1900, lt->tm_mon, lt->tm_mday, lt->tm_hour, lt->tm_min, lt->tm_sec);
         }
     }
 }
@@ -568,27 +576,48 @@ int main(int argc, char *argv[])
 {
     int32_t     res = STATE_SUCCESS;
     void       *mqtt_handle = NULL;
-    char       *url = "iot-as-mqtt.ap-southeast-1.aliyuncs.com"; /* 阿里云平台上海站点的域名后缀 */
+    //char       *url = "iot-as-mqtt.ap-southeast-1.aliyuncs.com"; /* 阿里云平台上海站点的域名后缀  线下*/
+	char       *url = "iot-as-mqtt.cn-shanghai.aliyuncs.com"; /* 阿里云平台上海站点的域名后缀 线上*/
     char        host[100] = {0}; /* 用这个数组拼接设备连接的云平台站点全地址, 规则是 ${productKey}.iot-as-mqtt.cn-shanghai.aliyuncs.com */
     uint16_t    port = 1883;      /* 无论设备是否使用TLS连接阿里云平台, 目的端口都是443 */
     aiot_sysdep_network_cred_t cred; /* 安全凭据结构体, 如果要用TLS, 这个结构体中配置CA证书等参数 */
-	int c;
+	int opt;
+	
+	/*int count;
+	for(count = 1;count < argc;count++)
+	{
+		printf("xfwu----%d: %s \r\n", count, argv[count]);
+	}*/
 
     /* TODO: 替换为自己设备的三元组 */
     char *product_key       = "a2Wl5a1kUzm";
     char *device_name       = "8000000240159904";
     char *device_secret     = "74H4pLD7oyHuOeLokfMPV14bWgSw79Ft";
+	
+	
+	
 
-    while (-1 != (c = getopt(argc, argv, "p:d:s:h"))) {
-        switch(c) {
+    while (-1 != (opt = getopt(argc, argv, "p:d:s:h"))) {
+		
+		
+     /*   printf("opt = %c\n", opt);
+        printf("optarg = %s\n", optarg);
+        printf("optind = %d\n", optind);
+        printf("argv[optind - 1] = %s\n\n",  argv[optind - 1]);
+		*/
+		
+        switch(opt) {
             case 'p':
 		    	product_key = optarg;
+				//printf("aaaaaaaaaaaa = %s\n", product_key);
                 break;
             case 'd':
 		    	device_name = optarg;
+				//printf("bbbbbbbbbbb = %s\n", device_name);
                 break;
 			case 's':
 				device_secret = optarg;
+				//printf("ccccccccccccc = %s\n", device_secret);
 				break;
 			case 'h':
             default:
@@ -614,6 +643,7 @@ int main(int argc, char *argv[])
     /* 创建1个MQTT客户端实例并内部初始化默认参数 */
     mqtt_handle = aiot_mqtt_init();
     if (mqtt_handle == NULL) {
+		//printf("xfwu---------------------333333333333333333333333");
         printf("aiot_mqtt_init failed\n");
         return -1;
     }
@@ -654,14 +684,18 @@ int main(int argc, char *argv[])
 	}
 	//create unix socket
 	listenfd = unixsvr_listen();
-	if (listenfd != -1)
+	if (listenfd != -1){
+		//printf("xfwu---------------------44444444444444");
 		epfd_epolladd(listenfd, EPOLLIN);
+		
+	}
 	//bytian; END
 
     /* 与服务器建立MQTT连接 */
     res = aiot_mqtt_connect(mqtt_handle);  //bytian
     if (res < STATE_SUCCESS) {
         /* 尝试建立连接失败, 销毁MQTT实例, 回收资源 */
+		//printf("xfwu---------------------555555555555555555555");
         aiot_mqtt_deinit(&mqtt_handle);
         printf("aiot_mqtt_connect failed: -0x%04X\n", -res);
         return -1;

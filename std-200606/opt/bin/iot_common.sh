@@ -12,6 +12,12 @@ get_prname() {
 	echo "$prname"
 }
 
+get_pruri() {
+        local pruri
+        pruri=`/usr/sbin/lpinfo -l -v |grep -C 3  "class = direct" |grep "uri" |awk -F "= " '{ print $2 }' |tr " " "_"`
+        echo "$pruri"
+}
+
 cunix_send() {
 	local topic="$1"
 	local payloadfile="$2"

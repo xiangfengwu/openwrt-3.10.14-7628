@@ -138,9 +138,16 @@ case $action in
 		hnd_connected
 		sleep 1
 		#get printer
-		printername=`uci -q get aliyun.iot.printername`
+		#printername=`uci -q get aliyun.iot.printername`
+		printername=`get_prname`
+		printeruri=`get_pruri`
 		if [ -n "$printername" ]; then
 			report_prname "$printername"
+			lpadmin -p ${printername} -E -m raw -v ${printeruri}
+			uci -q set aliyun.iot.printername="$printername"
+			lpoptions -d "$printername"
+		else
+			report_prname "none"
 		fi
 		;;
 	disconnect)

@@ -10,6 +10,8 @@ YJIMEI=`hexdump /dev/mtd3 -C -s 1024 -n 16 |head -1 |awk  -F "|" '{print $2}' |t
 productKey="a1Y72Hurhna"
 device_name=${YJIMEI}
 
+FirmwareVersion=`cat /etc/openwrt_release | grep DISTRIB_REVISION |awk -F '"' '{print $2}' | awk -F '-' '{print $2}'`
+
 hnd_connected() {
 	local topic="/${productKey}/${device_name}/user/auth"
 	local payloadfile="/tmp/iot/connected.json"
@@ -17,7 +19,7 @@ hnd_connected() {
 	seqno=`get_seqno`
 
 cat <<_ACEOF > $payloadfile
-{"cmd":10,"imei":"$device_name","seqno":$seqno,"data":{"version_code":18}}
+{"cmd":10,"imei":"$device_name","seqno":$seqno,"data":{"version_code":$FirmwareVersion}}
 _ACEOF
 
 	cunix_send "$topic" "$payloadfile"

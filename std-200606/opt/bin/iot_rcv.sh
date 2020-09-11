@@ -99,26 +99,53 @@ hnd_recvpub() {
 			uci -q set aliyun.iot.print_auth=$print_auth
 			;;
 		30)  #print task
-			seqno=`/opt/bin/cjson -f "$payloadfile" -r "seqno"`
+			xfwuPrintId=`cat /tmp/iot/yjprintid`
+
 			print_id=`/opt/bin/cjson -f "$payloadfile" -r "data:print_id"`
-			doc_url=`/opt/bin/cjson -f "$payloadfile" -r "data:doc_url"`
-			color_print=`/opt/bin/cjson -f "$payloadfile" -r "data:color_print"`
-			uci -q set aliyun.iot.seqno=$seqno
-			#reply to aiot cloud
-			report_prtask "$seqno" "$print_id"
-			#download page, then print it, finally report print status
-			print_auth=`uci -q get aliyun.iot.print_auth`
-			if [ "z$print_auth" != "z0" ]; then
-				for var1 in 1 2 3; do
-					curl --silent --max-time 3 -o /tmp/iot/pr.pdf "$doc_url"
+			echo "xfwu-------$xfwuPrintId-----333333333333-------$print_id" > /dev/console
+			if [ "$xfwuPrintId" != "$print_id" ]; then
+			   seqno=`/opt/bin/cjson -f "$payloadfile" -r "seqno"`
+			   doc_url=`/opt/bin/cjson -f "$payloadfile" -r "data:doc_url"`
+			   #doc_md5=`/opt/bin/cjson -f "$payloadfile" -f "data:md5"`
+			   doc_md5=`/opt/bin/cjson -f "$payloadfile" -r "data:md5"`
+			   color_print=`/opt/bin/cjson -f "$payloadfile" -r "data:color_print"`
+			   uci -q set aliyun.iot.seqno=$seqno
+			   #reply to aiot cloud
+			   report_prtask "$seqno" "$print_id"
+			   #download page, then print it, finally report print status
+			   print_auth=`uci -q get aliyun.iot.print_auth`
+			   
+			   echo ${print_id} > /tmp/iot/yjprintid
+			   if [ "z$print_auth" != "z0" ]; then
+				#for var1 in 1 2 3; do
+				xfwuVar=0
+				#while [ true ]
+				#do
+				        let xfwuVar=$xfwuVar+1
+					
+				   while [ true ]
+				   do
+					curl  -o /tmp/iot/pr.pdf "$doc_url"
+					echo "xfwu----------$xfwuVar" > /dev/console
+					#curl --silent --max-time 3 -o /tmp/iot/pr.pdf "$doc_url"
+					#wget -c  "$doc_url"  -O /tmp/iot/pr.pdf
 					if [ -f /tmp/iot/pr.pdf ]; then
-						lp /tmp/iot/pr.pdf &
-						sleep 1
-						report_prstatus "$seqno" "$print_id"
-						break
-					fi
-				done
-			fi
+					    xfwuMD5=`md5sum /tmp/iot/pr.pdf |awk -F ' ' '{print $1}'`				
+					    echo "xfwu--------$xfwuMD5-------$doc_md5" > /dev/console
+					    if [ "$xfwuMD5" = "$doc_md5" ]; then
+							echo "xfwu------------print pr.pdf" > /dev/console
+							lp /tmp/iot/pr.pdf &
+							sleep 1
+							report_prstatus "$seqno" "$print_id"
+							break
+					    fi
+					 fi
+				   done
+				#done
+			     fi
+			  else
+				echo "xfwu--------22222222222222------temp printid" > /dev/console
+			  fi
 			;;
 		91)  #reboot
 			seqno=`/opt/bin/cjson -f "$payloadfile" -r "seqno"`

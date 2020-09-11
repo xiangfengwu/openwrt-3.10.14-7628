@@ -1,6 +1,6 @@
 DISTRIB_ID="OpenWrt"
 DISTRIB_RELEASE="Barrier Breaker"
-DISTRIB_REVISION="std-200606"
+DISTRIB_REVISION="std-20200912"
 DISTRIB_CODENAME="barrier_breaker"
 DISTRIB_TARGET="ramips/generic"
 DISTRIB_DESCRIPTION="OpenWrt Barrier Breaker 14.07 (std-200606)"

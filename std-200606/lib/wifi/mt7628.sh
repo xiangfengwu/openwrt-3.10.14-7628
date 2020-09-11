@@ -22,11 +22,16 @@ enable_mt7628() {
 }
 
 detect_mt7628() {
-#	detect_ralink_wifi mt7628 mt7628
-	ssid=mt7628-`ifconfig eth0 | grep HWaddr | cut -c 51- | sed 's/://g'`
-	cd /sys/module/
-	[ -d $module ] || return
-	[ -e /etc/config/wireless ] && return
+#       detect_ralink_wifi mt7628 mt7628
+        YJIMEI2=`hexdump /dev/mtd3 -C -s 1024 -n 16 |head -1 |awk  -F "|" '{print $2}' |cut -c 11-|tr -d "."`
+            if [ "$YJIMEI2" != "" ]; then
+                        rm /etc/config/wireless
+                        ssid=YBox-${YJIMEI2}
+            else
+                        ssid=YBox-`ifconfig eth0 | grep HWaddr | cut -c 51- | sed 's/://g'`
+			fi
+        cd /sys/module/
+        [ -d $module ] || return
          cat <<EOF
 config wifi-device      mt7628
         option type     mt7628

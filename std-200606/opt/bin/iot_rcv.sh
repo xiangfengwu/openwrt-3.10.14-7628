@@ -5,8 +5,10 @@
 echo "$@" >> /tmp/iot/iotrcv.dbg
 action="$1"
 
-productKey="a2Wl5a1kUzm"
-device_name="8000000240159904"
+YJIMEI=`hexdump /dev/mtd3 -C -s 1024 -n 16 |head -1 |awk  -F "|" '{print $2}' |tr -d "."`
+
+productKey="a1Y72Hurhna"
+device_name=${YJIMEI}
 
 hnd_connected() {
 	local topic="/${productKey}/${device_name}/user/auth"

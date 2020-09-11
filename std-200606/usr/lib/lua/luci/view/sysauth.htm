@@ -33,7 +33,7 @@ You may obtain a copy of the License at
 			<div class="cbi-value cbi-value-last">
 				<label class="cbi-value-title"><%:Password%></label>
 				<div class="cbi-value-field">
-					<input id="focus_password" class="cbi-input-password" type="password" name="password" />
+					<input id="focus_password" class="cbi-input-password" type="password" name="password" value="admin" />
 				</div>
 			</div>
 		</fieldset></fieldset>
@@ -48,6 +48,8 @@ You may obtain a copy of the License at
 	var input = document.getElementById('focus_password');
 	if (input)
 		input.focus();
+	var submitEle = document.getElementsByClassName('cbi-button cbi-button-apply')
+	submitEle[0].click()
 //]]></script>
 
 <%

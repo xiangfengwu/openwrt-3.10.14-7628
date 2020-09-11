@@ -90,5 +90,6 @@ start() {
 		config_foreach load_led led
 	}
 	# Wim add below test script 20160618
-	btnd reset 1 > /dev/null 2>&1 &
+	btnd reset 38 > /dev/null 2>&1 &
+
 }

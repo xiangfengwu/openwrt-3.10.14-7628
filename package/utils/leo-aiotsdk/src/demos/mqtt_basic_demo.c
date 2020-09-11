@@ -655,7 +655,7 @@ int main(int argc, char *argv[])
         cred.option = AIOT_SYSDEP_NETWORK_CRED_NONE;
     }
     */
-
+	
     snprintf(host, 100, "%s.%s", product_key, url);
     /* 配置MQTT服务器地址 */
     aiot_mqtt_setopt(mqtt_handle, AIOT_MQTTOPT_HOST, (void *)host);
@@ -701,16 +701,30 @@ int main(int argc, char *argv[])
         return -1;
     }
 	
+	
+	char *tmpk="/";
+	char *tmpm="/user/push";
+	char *tmp = (char *) malloc(strlen(tmpk) + strlen(product_key) + strlen(tmpk) + strlen(device_name)+ strlen(tmpm));
+	
+	
+	
+	strcpy(tmp,tmpk);
+	strcat(tmp,product_key);
+	strcat(tmp,tmpk);
+	strcat(tmp,device_name);
+	strcat(tmp,tmpm);
+	
     /* MQTT 订阅topic功能示例, 请根据自己的业务需求进行使用 */
-    /* {
-        char *sub_topic = "/sys/a13FN5TplKq/mqtt_basic_demo/thing/event/+/post_reply";
-
+     
+        //char *sub_topic = "/a2Wl5a1kUzm/8000000781612294/user/push";
+		char *sub_topic = tmp;
+		printf("xfwu-------------subtopic successfully----------sub_topic2:-%s",sub_topic);
         res = aiot_mqtt_sub(mqtt_handle, sub_topic, NULL, 1, NULL);
         if (res < 0) {
             printf("aiot_mqtt_sub failed, res: -0x%04X\n", -res);
             return -1;
         }
-    } */
+		
 
     /* MQTT 发布消息功能示例, 请根据自己的业务需求进行使用 */
     /* {

@@ -1,0 +1,24 @@
+--- a/arch/mips/ralink/cmdline.c
++++ b/arch/mips/ralink/cmdline.c
+@@ -43,7 +43,8 @@
+ 
+ #if defined (CONFIG_RT2880_ROOTFS_IN_FLASH)
+ #ifdef CONFIG_SYSFS
+-char rt2880_cmdline[]="console=ttyS1,57600n8 root=/dev/mtdblock5";
++//char rt2880_cmdline[]="console=ttyS1,57600n8 root=/dev/mtdblock5";
++char rt2880_cmdline[]="console=ttyS1,115200n8 root=/dev/mtdblock5";
+ #else
+ char rt2880_cmdline[]="console=ttyS1,57600n8 root=1f05";
+ #endif
+--- a/arch/mips/ralink/init.c
++++ b/arch/mips/ralink/init.c
+@@ -780,7 +780,8 @@ __init void prom_init(void)
+ 
+ 	set_io_port_base(KSEG1);
+ 	write_c0_wired(0);
+-	serial_init(57600);
++	//serial_init(57600);
++	serial_init(115200);
+ 
+ 	prom_init_serial_port();  /* Needed for Serial Console */
+ 

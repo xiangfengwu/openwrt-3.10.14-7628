@@ -1,0 +1,8 @@
+Package: cups
+Version: 1.5.4-1
+Depends: libc, libcups, libcupsmime, libcupscgi, libcupsppdc, libusb-1.0
+Source: feeds/oldpackages/net/cups
+Section: net
+Architecture: ramips_24kec
+Installed-Size: 580726
+Description:  Common UNIX Printing System (daemon)

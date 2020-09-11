@@ -1,0 +1,9 @@
+Package: luci-i18n-chinese
+Version: unknown-1
+Depends: libc
+Source: package/ramips/ui/luci-mtk
+Section: luci
+Maintainer: LuCI Development Team <luci@lists.subsignal.org>
+Architecture: ramips_24kec
+Installed-Size: 19570
+Description:  Chinese (by Chinese Translators)

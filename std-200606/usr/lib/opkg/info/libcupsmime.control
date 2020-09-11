@@ -1,0 +1,8 @@
+Package: libcupsmime
+Version: 1.5.4-1
+Depends: libc, libcups
+Source: feeds/oldpackages/net/cups
+Section: libs
+Architecture: ramips_24kec
+Installed-Size: 8140
+Description:  Common UNIX Printing System - MIME library

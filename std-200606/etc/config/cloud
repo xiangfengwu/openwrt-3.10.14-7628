@@ -1,0 +1,13 @@
+
+config cloud
+	option apgroup '1'
+	option apsubgroup '5'
+	option server '2.2.2.2'
+	option enabled '1'
+	option apsn 'xdtx-001'
+	option apname 'cloudprinter'
+	option apaddress 'shenzhen'
+	option apversion '1.2'
+
+config advertisement
+

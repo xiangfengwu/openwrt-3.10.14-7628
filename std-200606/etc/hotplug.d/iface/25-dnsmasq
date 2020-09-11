@@ -1,0 +1,35 @@
+#!/bin/sh
+
+#[ "$ACTION" = ifup ] || exit 0
+
+operate=start
+if [ "$ACTION" = ifup ]; then
+	case "$INTERFACE" in
+		wan|wifirelay|lte*)
+			lines=`ip ro li |grep default`
+			if [ -n "$lines" ]; then
+				#status = online; #bytian
+				if [ -f /tmp/mydnsmasq.conf ]; then
+					rm -rf /tmp/mydnsmasq.conf
+					operate=restart
+				fi
+			fi
+			;;
+	esac
+else
+	case "$INTERFACE" in
+		wan|wifirelay|lte*)
+			lines=`ip ro li |grep default`
+			if [ -z "$lines" ]; then
+				#status = offline; #bytian
+				echo "address=/#/192.168.2.2" > /tmp/mydnsmasq.conf
+				operate=restart
+			else
+				exit 0
+			fi
+			;;
+	esac
+fi
+
+/etc/init.d/dnsmasq enabled && /etc/init.d/dnsmasq $operate
+

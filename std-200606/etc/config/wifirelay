@@ -1,0 +1,8 @@
+config wifirelay 'wifirelay2g'
+	option ssid 'maomao'
+	option key 'AaBb123654'
+	option AuthMode 'WPA2PSK'
+	option EncrypType 'TKIPAES'
+	option ifname 'apcli0'
+	option enabled '1'
+

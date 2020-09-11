@@ -1,0 +1,9 @@
+Package: bc
+Version: 1.06.95-1
+Depends: libc, libreadline, libncurses
+Source: feeds/oldpackages/utils/bc
+Section: utils
+Architecture: ramips_24kec
+Installed-Size: 30887
+Description:  bc is a language that supports arbitrary precision numbers with
+ interactive execution of statements.

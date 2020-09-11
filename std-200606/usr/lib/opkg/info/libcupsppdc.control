@@ -1,0 +1,8 @@
+Package: libcupsppdc
+Version: 1.5.4-1
+Depends: libc, libcups, libstdcpp
+Source: feeds/oldpackages/net/cups
+Section: libs
+Architecture: ramips_24kec
+Installed-Size: 41671
+Description:  Common UNIX Printing System - PPDC library

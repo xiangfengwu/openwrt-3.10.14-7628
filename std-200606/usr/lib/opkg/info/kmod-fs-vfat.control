@@ -1,0 +1,10 @@
+Package: kmod-fs-vfat
+Version: 3.10.14-p112871-1
+Depends: kernel (=3.10.14-p112871-1-9f4a96b1f4cd7468254f88d4407c759a), kmod-nls-base
+Source: package/kernel/linux
+License: GPLv2
+Section: kernel
+Status: unknown hold not-installed
+Architecture: ramips_24kec
+Installed-Size: 40416
+Description:  Kernel module for VFAT filesystem support

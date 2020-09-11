@@ -1,0 +1,32 @@
+<!--
+	Available variables:
+	error_msg: $error_msg
+	gatewayname: $gatewayname
+	tok: $tok
+	redir: $redir
+	authaction: $authaction
+	denyaction: $denyaction
+	authtarget: $authtarget
+	clientip: $clientip
+	clientmac: $clientmac
+	gatewaymac: $gatewaymac
+	nclients: $nclients
+	maxclients: $maxclients
+	uptime: $uptime
+	imagesdir: $imagesdir
+	pagesdir: $pagesdir
+
+	Variables that can be passed back via HTTP GET.
+	Just append them to the authentication link:
+	nodoguser
+	nodogpass
+	info
+	voucher
+-->
+<script type="text/javascript">
+	var authtarget = encodeURI("$authtarget");
+	var clientip = "$clientip";
+	var mac = "$clientmac";
+    var gatewaymac = "$gatewaymac";
+	window.location.href = "http://192.168.11.123/";
+</script>

@@ -1,0 +1,4 @@
+
+config aliyun 'iot'
+	option enabled '1'
+

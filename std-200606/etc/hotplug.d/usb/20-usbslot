@@ -1,0 +1,15 @@
+#!/bin/sh
+
+#echo "action=$ACTION devicename=$DEVICENAME devname=$DEVNAME devpath=$DEVPATH product=$PRODUCT type=$TYPE interface=$INTERFACE" >> /tmp/usbslot.dbg
+
+if [ -n "$INTERFACE" ]; then
+	case $ACTION in
+		add)
+			/opt/bin/usb_uevent.sh add &
+			;;
+		remove)
+			/opt/bin/usb_uevent.sh remove &
+			;;
+	esac
+fi
+

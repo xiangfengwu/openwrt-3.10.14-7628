@@ -1,0 +1,8 @@
+Package: libcupsdriver
+Version: 1.5.4-1
+Depends: libc, libcups
+Source: feeds/oldpackages/net/cups
+Section: libs
+Architecture: ramips_24kec
+Installed-Size: 13633
+Description:  Common UNIX Printing System - Driver library

@@ -1,0 +1,25 @@
+#!/bin/sh /etc/rc.common
+#set -x
+START=99
+
+USE_PROCD=1
+
+start_service() {
+	enabled=`uci -q get cloud.@cloud[0].enabled`
+	if [ "$enabled" != "1" ]; then
+		return
+	fi
+
+    echo "Starting Wifidog ... "
+ 
+	#/opt/bin/ap_get_httpinfob.sh
+
+	procd_open_instance
+	procd_set_param command /usr/bin/wifidog
+	procd_append_param command -f -d 4 -s
+	procd_set_param respawn
+	procd_close_instance
+
+}
+
+

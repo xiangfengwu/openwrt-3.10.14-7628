@@ -1,0 +1,11 @@
+Package: wifidog
+Version: 20130917
+Depends: libc, iptables-mod-extra, iptables-mod-ipopt, iptables-mod-nat-extra, libpthread
+Source: feeds/oldpackages/net/wifidog
+Section: net
+Architecture: ramips_24kec
+Installed-Size: 64822
+Description:  The Wifidog project is a complete and embeddable captive
+ portal solution for wireless community groups or individuals
+ who wish to open a free Hotspot while still preventing abuse
+ of their Internet connection.

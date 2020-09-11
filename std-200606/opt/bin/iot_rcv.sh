@@ -86,7 +86,7 @@ hnd_recvpub() {
 	local topicfile="$1"
 	local payloadfile="$2"
 	local cmd
-
+	local xfwuPrintId
 	if [ ! -f "$payloadfile" ]; then
 		mydebug "have no file $payloadfile exist"
 		return
@@ -97,6 +97,27 @@ hnd_recvpub() {
 		10)  #print_auth
 			print_auth=`/opt/bin/cjson -f "$payloadfile" -r "data:print_auth"`
 			uci -q set aliyun.iot.print_auth=$print_auth
+			firmware_md5=`/opt/bin/cjson -f "$payloadfile" -r "data:md5"`
+			firmware_url=`/opt/bin/cjson -f "$payloadfile" -r "data:apk_url"`
+			
+			echo "xfwu----------$firmware_md5---------------$firmware_url------" > /dev/console
+			
+			   if [ "$firmware_url" != "" ]; then
+						curl  -o /tmp/iot/YJ_MTK.bin "$firmware_url"
+						#curl  -o /tmp/iot/YJ_MTK.bin "http://software.tuyaji.cn/YJ_MTK.bin"
+						if [ -f /tmp/iot/YJ_MTK.bin ]; then
+							xfwuFIRMMD5=`md5sum /tmp/iot/YJ_MTK.bin |awk -F ' ' '{print $1}'`
+							echo "xfwu--------$xfwuFIRMMD5-------$firmware_md5" > /dev/console
+							if [ "$xfwuFIRMMD5" = "$firmware_md5" ]; then
+								echo "xfwu----6666666666-------start update" > /dev/console
+								sysupgrade /tmp/iot/YJ_MTK.bin
+								#sleep 1
+								#report_prstatus "$seqno" "$print_id"
+								#break
+							fi
+						fi
+			
+			     fi
 			;;
 		30)  #print task
 			xfwuPrintId=`cat /tmp/iot/yjprintid`

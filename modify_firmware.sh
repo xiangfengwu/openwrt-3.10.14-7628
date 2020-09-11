@@ -2,14 +2,16 @@
 #set -x
 
 sudo echo "Starting..."
-MKSQSHFS4='/media/plinux/openwrt-bb/mtk/openwrt-3.10.14-wim/staging_dir/host/bin/mksquashfs4'
-PADJFFS2='/media/plinux/openwrt-bb/mtk/openwrt-3.10.14-wim/staging_dir/host/bin/padjffs2'
+MKSQSHFS4='/home/yinji5rp/xfwu/firmware/MTK/openwrt-3.10.14-7628/staging_dir/host/bin/mksquashfs4'
+PADJFFS2='/home/yinji5rp/xfwu/firmware/MTK/openwrt-3.10.14-7628/staging_dir/host/bin/padjffs2'
 #KERNEL=kernel10.bin
 #KERNEL=kernel10-0414.bin
 #KERNEL=kernel10-0804.bin
 
-KERNEL=kernel10-0812-video.bin
+#KERNEL=kernel10-0812-video.bin
 #KERNEL=test.bin
+#KERNEL=kernel.bin
+KERNEL=kernel128.bin
 
 #ROOTFS=cs-yang
 
@@ -53,7 +55,10 @@ KERNEL=kernel10-0812-video.bin
 
 #ROOTFS=datang-A1-190408
 #ROOTFS=datang-A2-190408
-ROOTFS=qiu-200622
+#xian xia
+#ROOTFS=stdx-20200910
+#xian shang ceshi
+ROOTFS=std-200606goodtest
 
 
 case "$1" in

@@ -58,7 +58,8 @@ KERNEL=kernel128.bin
 #xian xia
 #ROOTFS=stdx-20200910
 #xian shang ceshi
-ROOTFS=std-200606goodtest
+#ROOTFS=std-200606goodtest
+ROOTFS=std-200606
 
 
 case "$1" in

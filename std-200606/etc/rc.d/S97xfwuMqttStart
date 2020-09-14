@@ -1,0 +1,15 @@
+#!/bin/sh /etc/rc.common
+#set -x
+START=97
+
+USE_PROCD=1
+
+start_service() {
+    	echo "[xfwu]------starting mqtt ... " > /dev/console
+	procd_open_instance
+	#procd_set_param command /opt/bin/mqtt-basic-demo
+	procd_set_param command /opt/bin/xfwu_wifiStatus.sh
+	procd_set_param respawn
+	procd_close_instance
+
+}

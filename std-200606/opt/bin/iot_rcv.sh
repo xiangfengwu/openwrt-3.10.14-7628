@@ -12,6 +12,21 @@ device_name=${YJIMEI}
 
 FirmwareVersion=`cat /etc/openwrt_release | grep DISTRIB_REVISION |awk -F '"' '{print $2}' | awk -F '-' '{print $2}'`
 
+report_prwifi() {
+        local topic="/${productKey}/${device_name}/user/doc"
+        local payloadfile="/tmp/iot/prwifi.json"
+        local seqno="$1"
+        local printid="$2"
+        local printWifi="$3"
+
+cat <<_ACEOF > $payloadfile
+{"cmd":12,"imei":"$device_name","seqno":$seqno,"data":{"print_id":$printid,"print_wifi":$printWifi}}
+_ACEOF
+
+        cunix_send "$topic" "$payloadfile"
+
+}
+
 hnd_connected() {
 	local topic="/${productKey}/${device_name}/user/auth"
 	local payloadfile="/tmp/iot/connected.json"
@@ -144,40 +159,40 @@ hnd_recvpub() {
 				#do
 				        let xfwuVar=$xfwuVar+1
 					
-				   while [ true ]
-				   do
-					curl  -o /tmp/iot/pr.pdf "$doc_url"
-					echo "xfwu----------$xfwuVar" > /dev/console
-					#curl --silent --max-time 3 -o /tmp/iot/pr.pdf "$doc_url"
-					#wget -c  "$doc_url"  -O /tmp/iot/pr.pdf
-					if [ -f /tmp/iot/pr.pdf ]; then
-					    xfwuMD5=`md5sum /tmp/iot/pr.pdf |awk -F ' ' '{print $1}'`				
-					    echo "xfwu--------$xfwuMD5-------$doc_md5" > /dev/console
-					    if [ "$xfwuMD5" = "$doc_md5" ]; then
-							echo "xfwu------------print pr.pdf" > /dev/console
-							lp /tmp/iot/pr.pdf &
-							sleep 1
-							report_prstatus "$seqno" "$print_id"
-							break
-					    fi
-					 fi
-				   done
-				#done
-			     fi
-			  else
-				echo "xfwu--------22222222222222------temp printid" > /dev/console
-			  fi
-			;;
-		91)  #reboot
-			seqno=`/opt/bin/cjson -f "$payloadfile" -r "seqno"`
-			report_reboot "$seqno"
-			sleep 2
-			reboot -f
-			;;
-		*)
-			mydebug "cmd=$cmd Not supported"
-			;;
-	esac
+                                   #while [ true ]
+                                   #do
+                                        curl  -o /tmp/iot/pr.pdf "$doc_url"
+                                        echo "xfwu----------$xfwuVar" > /dev/console
+                                        #curl --silent --max-time 3 -o /tmp/iot/pr.pdf "$doc_url"
+                                        #wget -c  "$doc_url"  -O /tmp/iot/pr.pdf
+                                        if [ -f /tmp/iot/pr.pdf ]; then
+                                            xfwuMD5=`md5sum /tmp/iot/pr.pdf |awk -F ' ' '{print $1}'`
+                                            echo "xfwu--------$xfwuMD5-------$doc_md5" > /dev/console
+                                            if [ "$xfwuMD5" = "$doc_md5" ]; then
+                                                        echo "xfwu------------print pr.pdf" > /dev/console
+                                                        lp /tmp/iot/pr.pdf &
+                                                        sleep 1
+                                                        report_prstatus "$seqno" "$print_id"
+                                                        break
+                                            fi
+                                         fi
+                                   #done
+                                #done
+                             fi
+                          else
+                                echo "xfwu--------22222222222222------temp printid" > /dev/console
+                          fi
+                        ;;
+                91)  #reboot
+                        seqno=`/opt/bin/cjson -f "$payloadfile" -r "seqno"`
+                        report_reboot "$seqno"
+                        sleep 2
+                        reboot -f
+                        ;;
+                *)
+                        mydebug "cmd=$cmd Not supported"
+                        ;;
+        esac
 
 }
 
@@ -185,6 +200,9 @@ case $action in
 	connected|reconnect)
 		hnd_connected
 		sleep 1
+        printWifi=$(iwconfig apcli0|grep ESSID | awk -F ':' '{print $2}' | awk -F '"' '{print $2}')
+        echo "xfwu-----------printWifi:$printWifi" > /dev/console
+        report_prwifi "$seqno" "$print_id" "$printWifi"
 		#get printer
 		#printername=`uci -q get aliyun.iot.printername`
 		printername=`get_prname`

@@ -27,6 +27,7 @@ detect_mt7628() {
             if [ "$YJIMEI2" != "" ]; then
                         rm /etc/config/wireless
                         ssid=YBox-${YJIMEI2}
+			echo ${ssid} > /www/luci-static/wifiname.txt
             else
                         ssid=YBox-`ifconfig eth0 | grep HWaddr | cut -c 51- | sed 's/://g'`
 			fi

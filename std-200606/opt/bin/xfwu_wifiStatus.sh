@@ -24,6 +24,8 @@ if [ ! -f "/opt/bin/xfwusecret" ];then
      touch /opt/bin/xfwusecret
 fi
 
+iwpriv ra0 get_site_survey > /www/luci-static/xfwuWifiList.txt
+
 YJIMEI=`hexdump /dev/mtd3 -C -s 1024 -n 16 |head -1 |awk  -F "|" '{print $2}' |tr -d "."` 
 
 /opt/bin/xfwu_led_uevent.sh &

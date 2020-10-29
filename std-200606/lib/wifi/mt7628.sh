@@ -23,7 +23,7 @@ enable_mt7628() {
 
 detect_mt7628() {
 #       detect_ralink_wifi mt7628 mt7628
-        YJIMEI2=`hexdump /dev/mtd3 -C -s 1024 -n 16 |head -1 |awk  -F "|" '{print $2}' |cut -c 11-|tr -d "."`
+        YJIMEI2=`hexdump /dev/mtd3 -C -s 1024 -n 16 |head -1 |awk  -F "|" '{print $2}' |cut -c 13-15|tr -d "."`
             if [ "$YJIMEI2" != "" ]; then
                         rm /etc/config/wireless
                         ssid=YBox-${YJIMEI2}

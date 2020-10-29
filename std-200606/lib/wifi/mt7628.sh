@@ -26,10 +26,10 @@ detect_mt7628() {
         YJIMEI2=`hexdump /dev/mtd3 -C -s 1024 -n 16 |head -1 |awk  -F "|" '{print $2}' |cut -c 13-15|tr -d "."`
             if [ "$YJIMEI2" != "" ]; then
                         rm /etc/config/wireless
-                        ssid=YBox-${YJIMEI2}
-			echo ${ssid} > /www/luci-static/wifiname.txt
+                        ssid=PeriPage-PG1-${YJIMEI2}
+						echo ${ssid} > /www/luci-static/wifiname.txt
             else
-                        ssid=YBox-`ifconfig eth0 | grep HWaddr | cut -c 51- | sed 's/://g'`
+                        ssid=PeriPage-PG1-`ifconfig eth0 | grep HWaddr | cut -c 51- | sed 's/://g'`
 			fi
         cd /sys/module/
         [ -d $module ] || return

@@ -63,8 +63,8 @@ You may obtain a copy of the License at
         
             if level > 2 then
 %>
-	<ul class="tabs">
-		<%  
+<ul class="tabs">
+	<%  
             end
 
 			local selected_node
@@ -79,15 +79,15 @@ You may obtain a copy of the License at
 				end
                 if level > 2 then
 		%>
-			<li class="tabmenu-item-<%=v%><%- if nnode._menu_selected or (node.leaf and v == leaf) then %> active<% end %>">
-			    <a href="<%=nodeurl(prefix, v, nnode.query)%>"><%=striptags(translate(nnode.title))%></a>
-			</li>
-		<%      end
+	<li class="tabmenu-item-<%=v%><%- if nnode._menu_selected or (node.leaf and v == leaf) then %> active<% end %>">
+		<a href="<%=nodeurl(prefix, v, nnode.query)%>"><%=striptags(translate(nnode.title))%></a>
+	</li>
+	<%      end
 			end
             
             if level > 2 then
 		%>
-	</ul>
+</ul>
 <%          end
 
 			if selected_node then
@@ -98,47 +98,52 @@ You may obtain a copy of the License at
 -%>
 <!DOCTYPE html>
 <html lang="<%=luci.i18n.context.lang%>">
- <head>
-  <meta charset="utf-8">
-  <title><%=striptags( hostname .. ( (node and node.title) and ' - ' .. translate(node.title) or '')) %> - LuCI</title>
-  <!--[if lt IE 9]><script src="<%=media%>/html5.js"></script><![endif]-->
-  <meta name="viewport" content="initial-scale=1.0">
-  <link rel="stylesheet" href="<%=media%>/cascade.css">
-  <link rel="stylesheet" media="only screen and (max-device-width: 854px)" href="<%=media%>/mobile.css" type="text/css" />
-  <link rel="shortcut icon" href="<%=media%>/favicon.ico">
-  <% if node and node.css then %><link rel="stylesheet" href="<%=resource%>/<%=node.css%>">
-  <% end -%>
-  <% if css then %><style title="text/css">
-  <%-= css %>
-  </style>
-  <% end -%>
-  <script src="<%=resource%>/xhr.js"></script>
- </head>
 
- <body class="lang_<%=luci.i18n.context.lang%> <%- if node then %><%= striptags( node.title ) %><%- end %>">
-  <header>
-   <div class="fill">
-    <div class="container">
-     <a class="brand" href="#"><%=hostname%></a>
-     <ul class="nav">
-	 <%-
+<head>
+	<meta charset="utf-8">
+	<!-- <title><%=striptags( hostname .. ( (node and node.title) and ' - ' .. translate(node.title) or '')) %> - LuCI</title> -->
+	<title>配置网络</title>
+	<!--[if lt IE 9]><script src="<%=media%>/html5.js"></script><![endif]-->
+	<meta name="viewport"
+		content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,user-scalable=no">
+	<link rel="stylesheet" href="<%=media%>/cascade.css">
+	<link rel="stylesheet" media="only screen and (max-device-width: 854px)" href="<%=media%>/mobile.css"
+		type="text/css" />
+	<link rel="shortcut icon" href="<%=media%>/favicon.ico">
+	<% if node and node.css then %>
+	<link rel="stylesheet" href="<%=resource%>/<%=node.css%>">
+	<% end -%>
+	<% if css then %><style title="text/css">
+		<%-=css %>
+	</style>
+	<% end -%>
+	<script src="<%=resource%>/xhr.js"></script>
+</head>
+
+<body class="lang_<%=luci.i18n.context.lang%> <%- if node then %><%= striptags( node.title ) %><%- end %>">
+	<header style="display:none">
+		<div class="fill">
+			<div class="container">
+				<a class="brand" href="#"><%=hostname%></a>
+				<ul class="nav">
+					<%-
 		local function submenu(prefix, node)
 			local childs = disp.node_childs(node)
 			if #childs > 0 then
 	 %>
-	 <ul class="dropdown-menu">
-			<%-
+					<ul class="dropdown-menu">
+						<%-
 				for i, r in ipairs(childs) do
 					local nnode = node.nodes[r]
 					local href  = controller .. prefix .. r ..
 						(nnode.query and http.build_querystring(nnode.query) or "")
 			%>
-	  <li><a href="<%=pcdata(href)%>"><%=pcdata(striptags(translate(nnode.title)))%></a></li>
-			<%-
+						<li><a href="<%=pcdata(href)%>"><%=pcdata(striptags(translate(nnode.title)))%></a></li>
+						<%-
 				end
 			%>
-	</ul>
-	<%-
+					</ul>
+					<%-
 			end
 		end
 
@@ -153,22 +158,22 @@ You may obtain a copy of the License at
                 
                 if #grandchildren > 0 then
 	%>
-        <li class="dropdown">
-            <a class="menu" href="<%=pcdata(href)%>"><%=pcdata(striptags(translate(nnode.title)))%></a>
-            <%- submenu("/" .. category .. "/" .. r .. "/", nnode) %>
-        </li>
-	<%          else %>
-         <li>
-	        <a href="<%=pcdata(href)%>"><%=pcdata(striptags(translate(nnode.title)))%></a>
-        </li> 
-    <%
+					<li class="dropdown">
+						<a class="menu" href="<%=pcdata(href)%>"><%=pcdata(striptags(translate(nnode.title)))%></a>
+						<%- submenu("/" .. category .. "/" .. r .. "/", nnode) %>
+					</li>
+					<%          else %>
+					<li>
+						<a href="<%=pcdata(href)%>"><%=pcdata(striptags(translate(nnode.title)))%></a>
+					</li>
+					<%
                 end
 			end
 		end
 	%>
-	</ul>
+				</ul>
 
-	<%
+				<%
         -- calculate the number of unsaved changes
 		if tree.nodes[category] and tree.nodes[category].ucidata then
 			local ucichanges = 0
@@ -181,29 +186,32 @@ You may obtain a copy of the License at
 				end
 			end
 	%>
-	<div class="pull-right">
-	<% if ucichanges > 0 then %>
-	  <a class="label notice" href="<%=controller%>/<%=category%>/uci/changes"><%:Unsaved Changes%>: <%=ucichanges%></a>
-	<% end %>
-      <span id="xhr_poll_status" style="display:none" onclick="XHR.running() ? XHR.halt() : XHR.run()">
-       <span class="label success" id="xhr_poll_status_on"><%:Auto Refresh%> <%:on%></span>
-       <span class="label" id="xhr_poll_status_off" style="display:none"><%:Auto Refresh%> <%:off%></span>
-      </span>
-     </div>
-	<% end %>
-    </div>
-   </div>
-  </header>
+				<div class="pull-right">
+					<% if ucichanges > 0 then %>
+					<a class="label notice" href="<%=controller%>/<%=category%>/uci/changes"><%:Unsaved Changes%>:
+						<%=ucichanges%></a>
+					<% end %>
+					<span id="xhr_poll_status" style="display:none" onclick="XHR.running() ? XHR.halt() : XHR.run()">
+						<span class="label success" id="xhr_poll_status_on"><%:Auto Refresh%> <%:on%></span>
+						<span class="label" id="xhr_poll_status_off" style="display:none"><%:Auto Refresh%>
+							<%:off%></span>
+					</span>
+				</div>
+				<% end %>
+			</div>
+		</div>
+	</header>
 
-<%- if luci.sys.process.info("uid") == 0 and luci.sys.user.getuser("root") and not luci.sys.user.getpasswd("root") then -%>
-<div class="container">
-	<div class="alert-message warning">
-		<h4><%:No password set!%></h4>
-		<%:There is no password set on this router. Please configure a root password to protect the web interface and enable SSH.%><br>
-        <a href="<%=pcdata(luci.dispatcher.build_url("admin/system/admin"))%>"><%:Go to password configuration...%></a>
+	<%- if luci.sys.process.info("uid") == 0 and luci.sys.user.getuser("root") and not luci.sys.user.getpasswd("root") then -%>
+	<div class="container">
+		<div class="alert-message warning">
+			<h4><%:No password set!%></h4>
+			<%:There is no password set on this router. Please configure a root password to protect the web interface and enable SSH.%><br>
+			<a
+				href="<%=pcdata(luci.dispatcher.build_url("admin/system/admin"))%>"><%:Go to password configuration...%></a>
+		</div>
 	</div>
-</div>
-<%- end -%>
+	<%- end -%>
 
-<div id="maincontent" class="container">
-<% if category then subtree("/" .. category .. "/", cattree) end %>
+	<div id="maincontent" class="container" style="display: none;">
+		<% if category then subtree("/" .. category .. "/", cattree) end %>

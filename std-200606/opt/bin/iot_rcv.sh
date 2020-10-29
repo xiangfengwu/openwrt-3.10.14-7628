@@ -13,14 +13,12 @@ device_name=${YJIMEI}
 FirmwareVersion=`cat /etc/openwrt_release | grep DISTRIB_REVISION |awk -F '"' '{print $2}' | awk -F '-' '{print $2}'`
 
 report_prwifi() {
-        local topic="/${productKey}/${device_name}/user/doc"
+        local topic="/${productKey}/${device_name}/user/auth"
         local payloadfile="/tmp/iot/prwifi.json"
-        local seqno="$1"
-        local printid="$2"
-        local printWifi="$3"
+        local printWifi="$1"
 
 cat <<_ACEOF > $payloadfile
-{"cmd":12,"imei":"$device_name","seqno":$seqno,"data":{"print_id":$printid,"print_wifi":$printWifi}}
+{"cmd":14,"imei":"$device_name","data":{"print_wifi":$printWifi}}
 _ACEOF
 
         cunix_send "$topic" "$payloadfile"
@@ -200,9 +198,9 @@ case $action in
 	connected|reconnect)
 		hnd_connected
 		sleep 1
-        printWifi=$(iwconfig apcli0|grep ESSID | awk -F ':' '{print $2}' | awk -F '"' '{print $2}')
+        printWifi=$(iwconfig apcli0|grep ESSID | awk -F ':' '{print $2}')
         echo "xfwu-----------printWifi:$printWifi" > /dev/console
-        report_prwifi "$seqno" "$print_id" "$printWifi"
+        report_prwifi "$printWifi"
 		#get printer
 		#printername=`uci -q get aliyun.iot.printername`
 		printername=`get_prname`

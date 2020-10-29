@@ -284,7 +284,7 @@ You may obtain a copy of the License at
         border-radius: 20px;
         color: #222;
         font-size: 16px;
-        line-height: 24px;
+        line-height: 30px;
     }
 
     .modal .body #modal-btn {
@@ -400,22 +400,19 @@ You may obtain a copy of the License at
             xmlHttp.onreadystatechange = function () {
                 if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
                     var str = xmlHttp.responseText;
-                    var re = new RegExp("(?=\\d+).*(.+\\:)", "g");
-                    var myArray = str.match(re);
-                    var wifiList = []
-                    myArray.forEach(item => {
-                        var temp = item.split(/\s+/)
-                        if (temp.length > 2) {
-                            var str = temp[1]
-                            wifiList.push(str)
+                    const strArr = str.split('\n')
+                    console.log(strArr)
+                    if (strArr.length > 2) {
+                        var wifiList = removeDuplicate(strArr)
+                        console.log('-----------')
+                        console.log(wifiList)
+                        var wifiListDiv = document.getElementById('wifi-list');
+                        var htmlStr = ''
+                        for (i = 0; i < wifiList.length; i++) {
+                            htmlStr += `<div onclick="setWifiName('${wifiList[i]}')" id="wifi_${wifiList[i]}" class="wifi-item"><div class="div-wifiName"> ${wifiList[i]}</div></div>`
                         }
-                    })
-                    var wifiListDiv = document.getElementById('wifi-list');
-                    var htmlStr = ''
-                    for (i = 0; i < wifiList.length; i++) {
-                        htmlStr += `<div onclick="setWifiName('${wifiList[i]}')" id="wifi_${wifiList[i]}" class="wifi-item"><div class="div-wifiName"> ${wifiList[i]}</div></div>`
+                        wifiListDiv.innerHTML = htmlStr
                     }
-                    wifiListDiv.innerHTML = htmlStr
                 }
             }
             xmlHttp.open("GET", url, true);
@@ -423,6 +420,18 @@ You may obtain a copy of the License at
         }
 
         getWifiList()
+
+        function removeDuplicate(arr) {
+            var resultArr = [];
+            var reg = /\w+:\w+:\w+:\w+:\w+/
+            for (var i = arr.length - 1; i > 0; i--) {
+                var item = arr[i];
+                if (item.length > 0 && resultArr.indexOf(item) < 0 && item.search(reg) === -1) {
+                    resultArr.push(item);
+                }
+            }
+            return resultArr;
+        }
 
         function setWifiName(name) {
             var temp = document.getElementsByClassName('choose')[0]

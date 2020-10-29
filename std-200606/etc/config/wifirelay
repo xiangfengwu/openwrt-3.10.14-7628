@@ -1,6 +1,6 @@
 config wifirelay 'wifirelay2g'
-	option ssid 'maomao'
-	option key 'AaBb123654'
+	option ssid 'peripage'
+	option key 'ileadtek.com'
 	option AuthMode 'WPA2PSK'
 	option EncrypType 'TKIPAES'
 	option ifname 'apcli0'

@@ -33,7 +33,7 @@ You may obtain a copy of the License at
             <div class="title">WiFi名称</div>
             <div class="input">
                 <div class="box">
-                    <input type="text" class="input-ssid" placeholder="peripage" id="input-ssid" />
+                    <input type="text" class="input-ssid" placeholder="请输入或选择WiFi名称" id="input-ssid" />
                     <i class="icon-input">
                         <img src="http://192.168.11.123/luci-static/down.png" alt="" width="18" height="18"
                             id="img-arrow">
@@ -45,12 +45,34 @@ You may obtain a copy of the License at
         <div class="form-row">
             <div class="title">WiFi密码</div>
             <div class="input">
-                <input type="text" placeholder="ileadtek.com" class="input-pass" id="input-pass">
+                <input type="text" placeholder="请输入WiFi密码" class="input-pass" id="input-pass">
             </div>
         </div>
 
         <div class="form-action">
             <div class="btn" id="btn-connect">连接</div>
+        </div>
+    </div>
+    <div class="msg-wrap">
+        <div class="title">
+            <div class="left"></div>
+            <div class="middle">温馨提示</div>
+            <div class="right"></div>
+        </div>
+        <div class="section">
+            1、若WiFi列表中未发现所要连接的WiFi，请手动输入WiFi名称；
+        </div>
+        <div class="section">
+            2、若配网失败（请核对WiFi名称或密码），退出并再次连接盒子热点进入该页面，重新配网；
+        </div>
+        <div class="section">
+            3、配网完成（网络指示灯常亮），将自动退出该页面（若长时间无反应，可手动关闭）；
+        </div>
+        <div class="section">
+            4、小程序或APP显示设备在线，表示已配网成功；
+        </div>
+        <div class="section">
+            5、配网成功后，请在手机设置里忽略/移除此盒子热点，以免影响手机连接正常WiFi上网。
         </div>
     </div>
     <div class="modal " id="modal-tips" style="display: none;">
@@ -86,7 +108,6 @@ You may obtain a copy of the License at
 
     .form-wifi {
         width: 100%;
-        height: 500px;
         padding-top: 20px;
         padding-left: 20px;
         padding-right: 20px;
@@ -274,8 +295,6 @@ You may obtain a copy of the License at
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        /* margin-top: -150px; */
-        /* margin-left: -115px; */
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -301,6 +320,57 @@ You may obtain a copy of the License at
         font-weight: 400px;
         margin-top: 20px;
     }
+
+    .msg-wrap {
+        width: 100vw;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 25px;
+    }
+
+    .msg-wrap  .title {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 16px;
+        width: 100%;
+    }
+
+    .msg-wrap  .left {
+        width: 30%;
+        height: 2px;
+        background-image: linear-gradient(to right, rgba(255, 117, 57, 0), rgba(255, 117, 57, 0.42));
+    }
+
+    .msg-wrap  .right {
+        width: 30%;
+        height: 2px;
+        background-image: linear-gradient(to right, rgba(255, 117, 57, 0.42), rgba(255, 117, 57, 0));
+    }
+
+    .msg-wrap .middle {
+        width: 90px;
+        height: 16px;
+        font-size: 16px;
+        font-weight: 500;
+        text-align: center;
+        color: #ff7539;
+        line-height: 16px;
+        margin-left: 10px;
+        margin-right: 10px;
+    }
+
+    .msg-wrap .section {
+        width: 323px;
+        font-size: 12px;
+        font-weight: 400;
+        text-align: left;
+        color: #999999;
+        line-height: 17px;
+        margin-bottom: 16px;
+    }
 </style>
 <script>
     var wifirelayEle = document.getElementById('cbi-wifirelay')
@@ -315,8 +385,32 @@ You may obtain a copy of the License at
         document.addEventListener('gesturestart', function (event) {
             event.preventDefault();
         });
+        var inputPassEle = document.getElementById('input-pass')
+        var oldPassEle = document.getElementById('cbid.wifirelay.wifirelay2g.key')
+       
+        var wifiListEle = document.getElementById('wifi-list')
+        var oldSsidInputEle = document.getElementById('cbid.wifirelay.wifirelay2g.ssid')
+        var ssidInputEle = document.getElementById('input-ssid')
+        var arrowEle = document.getElementById('img-arrow')
+        ssidInputEle.addEventListener("focusout", function () {
+            setTimeout(function () {
+                wifiListEle.classList.add('hide')
+                arrowEle.src = urlBase + 'down.png'
+            }, 800)
+        })
+        arrowEle.addEventListener('click', function () {
+            if (wifiListEle.classList.contains('hide')) {
+                wifiListEle.classList.remove('hide')
+                arrowEle.src = urlBase + 'up.png'
+            } else {
+                wifiListEle.classList.add('hide')
+                arrowEle.src = urlBase + 'down.png'
+            }
+        })
         var wifirelayLoadingEle = document.getElementById('cbi-apply-wifirelay')
         if (wifirelayLoadingEle) {
+            ssidInputEle.value = oldSsidInputEle.value
+            inputPassEle.value = oldPassEle.value
             document.getElementById('box-loading').append(wifirelayLoadingEle)
             var newDivEle = document.createElement('div');
             newDivEle.innerHTML = "配网中"
@@ -346,29 +440,7 @@ You may obtain a copy of the License at
             }
         }
 
-        var inputPassEle = document.getElementById('input-pass')
-        var oldPassEle = document.getElementById('cbid.wifirelay.wifirelay2g.key')
-        inputPassEle.value = oldPassEle.value
-        var wifiListEle = document.getElementById('wifi-list')
-        var oldSsidInputEle = document.getElementById('cbid.wifirelay.wifirelay2g.ssid')
-        var ssidInputEle = document.getElementById('input-ssid')
-        ssidInputEle.value = oldSsidInputEle.value
-        var arrowEle = document.getElementById('img-arrow')
-        ssidInputEle.addEventListener("focusout", function () {
-            setTimeout(function () {
-                wifiListEle.classList.add('hide')
-                arrowEle.src = urlBase + 'down.png'
-            }, 800)
-        })
-        arrowEle.addEventListener('click', function () {
-            if (wifiListEle.classList.contains('hide')) {
-                wifiListEle.classList.remove('hide')
-                arrowEle.src = urlBase + 'up.png'
-            } else {
-                wifiListEle.classList.add('hide')
-                arrowEle.src = urlBase + 'down.png'
-            }
-        })
+      
         var btnConnectEle = document.getElementById('btn-connect')
         btnConnectEle.addEventListener("click", function () {
             oldSsidInputEle.value = ssidInputEle.value
@@ -401,11 +473,9 @@ You may obtain a copy of the License at
                 if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
                     var str = xmlHttp.responseText;
                     const strArr = str.split('\n')
-                    console.log(strArr)
                     if (strArr.length > 2) {
                         var wifiList = removeDuplicate(strArr)
-                        console.log('-----------')
-                        console.log(wifiList)
+                        // console.log(wifiList)
                         var wifiListDiv = document.getElementById('wifi-list');
                         var htmlStr = ''
                         for (i = 0; i < wifiList.length; i++) {

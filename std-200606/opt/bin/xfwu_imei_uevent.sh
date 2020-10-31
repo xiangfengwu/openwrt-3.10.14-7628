@@ -9,10 +9,15 @@ rm -rf /opt/bin/xfwusecret
 
 
 YJMAC=$2
+if [ ! -z $YJMAC ]; then
 echo $YJMAC  > /dev/console
 YJMAC2=`echo  $YJMAC | sed 's/:/\\\x/g' |sed -e 's/^/\\\x/'`
 echo $YJMAC2   > /dev/console
 echo -en $YJMAC2 |  dd of=/dev/mtdblock3 bs=1 seek=4 conv=notrunc
 hwmac=`hexdump /dev/mtd3 -C -s 4 -n 6 |head -1 |awk  -F  " " '{print $2$3$4$5$6$7}'`
-echo "xfwu---------------macaddr:$YJMAC" > /dev/console
+echo "xfwu------hwmac:$hwmac---------macaddr:$YJMAC" > /dev/console
+else
+hwmac=`hexdump /dev/mtd3 -C -s 4 -n 6 |head -1 |awk  -F  " " '{print $2$3$4$5$6$7}'`
+echo "xfwu------hwmac:$hwmac---------macaddr:$YJMAC" > /dev/console
+fi
 

@@ -724,6 +724,23 @@ int main(int argc, char *argv[])
             printf("aiot_mqtt_sub failed, res: -0x%04X\n", -res);
             return -1;
         }
+    //by xfwu 20201027
+	char *xfwutmpk="/sys/";	
+	char *xfwutmpm="/rrpc/request/+";
+	char *xfwutmp = (char *) malloc(strlen(xfwutmpk) + strlen(product_key) + strlen(tmpk) + strlen(device_name)+ strlen(xfwutmpm));
+	strcpy(xfwutmp,xfwutmpk);
+	strcat(xfwutmp,product_key);
+	strcat(xfwutmp,tmpk);
+	strcat(xfwutmp,device_name);
+	strcat(xfwutmp,xfwutmpm);
+    //char *sub_topic = "/sys/a2Wl5a1kUzm/8000000781612294/rrpc/request/+";
+	char *xfwusub_topic = xfwutmp;
+	printf("xfwu---rrpc----------subtopic successfully----------sub_topic2:-%s",xfwusub_topic);
+    res = aiot_mqtt_sub(mqtt_handle, xfwusub_topic, NULL, 1, NULL);
+    if (res < 0) {
+        printf("aiot_mqtt_sub failed, res: -0x%04X\n", -res);
+        return -1;
+    }
 		
 
     /* MQTT 发布消息功能示例, 请根据自己的业务需求进行使用 */

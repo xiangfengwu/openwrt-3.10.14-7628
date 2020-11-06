@@ -95,6 +95,13 @@ _ACEOF
 	
 }
 
+report_heartstatus() {
+        local topic="/sys/${productKey}/${device_name}/rrpc/response/$1"
+        local payloadfile="/tmp/iot/pubpayload.json"
+        cunix_send "$topic" "$payloadfile"
+}
+
+
 hnd_recvpub() {
 	local topicfile="$1"
 	local payloadfile="$2"
@@ -103,6 +110,15 @@ hnd_recvpub() {
 	if [ ! -f "$payloadfile" ]; then
 		mydebug "have no file $payloadfile exist"
 		return
+	fi
+	
+	xfwuIOT=`cat /tmp/iot/pubtopic.json |grep request |awk -F '/' '{print $6}'`
+	xfwuIOTID=`cat /tmp/iot/pubtopic.json  |awk -F '/' '{print $7}'`
+
+	if [ "$xfwuIOT" = "request" ]; then
+		sed -i "s/request/response/g" $topicfile
+		report_heartstatus "$xfwuIOTID"
+
 	fi
 
 	cmd=`/opt/bin/cjson -f "$payloadfile" -r "cmd"`

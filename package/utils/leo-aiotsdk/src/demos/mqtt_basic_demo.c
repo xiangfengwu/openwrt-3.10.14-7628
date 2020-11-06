@@ -724,7 +724,47 @@ int main(int argc, char *argv[])
             printf("aiot_mqtt_sub failed, res: -0x%04X\n", -res);
             return -1;
         }
-		
+
+
+    //by xfwu 20201027
+	char *xfwutmpk="/sys/";	
+	char *xfwutmpm="/rrpc/request/+";
+	char *xfwutmp = (char *) malloc(strlen(xfwutmpk) + strlen(product_key) + strlen(tmpk) + strlen(device_name)+ strlen(xfwutmpm));
+	strcpy(xfwutmp,xfwutmpk);
+	strcat(xfwutmp,product_key);
+	strcat(xfwutmp,tmpk);
+	strcat(xfwutmp,device_name);
+	strcat(xfwutmp,xfwutmpm);
+    //char *sub_topic = "/sys/a2Wl5a1kUzm/8000000781612294/rrpc/request/+";
+	char *xfwusub_topic = xfwutmp;
+	printf("xfwu---rrpc----------subtopic successfully----------sub_topic2:-%s",xfwusub_topic);
+    res = aiot_mqtt_sub(mqtt_handle, xfwusub_topic, NULL, 1, NULL);
+    if (res < 0) {
+        printf("aiot_mqtt_sub failed, res: -0x%04X\n", -res);
+        return -1;
+    }
+	
+	/*
+	char *xfwutmpm2="/rrpc/response/+";
+	char *xfwutmpp = (char *) malloc(strlen(xfwutmpk) + strlen(product_key) + strlen(tmpk) + strlen(device_name)+ strlen(xfwutmpm2));
+	strcpy(xfwutmpp,xfwutmpk);
+	strcat(xfwutmpp,product_key);
+	strcat(xfwutmpp,tmpk);
+	strcat(xfwutmpp,device_name);
+	strcat(xfwutmpp,xfwutmpm2);	*/
+	//char *pub_topic = "/sys/a2Wl5a1kUzm/8000000781612294/rrpc/request/+";
+	//char *pub_topic = xfwutmpp;
+	//char *pub_payload = "{\"id\":\123\,\"version\":\"1.0\",\"time\":{\"LightSwitch\":0}}";	
+    /*char *xfwupub_topic = xfwutmpp;
+    char *pub_payload = "{\"id\":123,\"version\":\"1.0\",\"time\":123}";
+
+	printf("xfwu---rrpc----------pubtopic successfully----------xfwupub_topic:-%s",xfwupub_topic);
+    res = aiot_mqtt_pub(mqtt_handle, xfwupub_topic, (uint8_t *)pub_payload, (uint32_t)strlen(pub_payload), 0);
+    if (res < 0) {
+        printf("aiot_mqtt_pub failed---xfwu-----, res: -0x%04X\n", -res);
+        return -1;
+    )*/
+	//by xfwu 20201027
 
     /* MQTT 发布消息功能示例, 请根据自己的业务需求进行使用 */
     /* {

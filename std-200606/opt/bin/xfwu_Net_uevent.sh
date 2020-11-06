@@ -43,6 +43,8 @@ do
                 fi
 		kill ${mqttPID}
                 sleep 2          
+				/opt/bin/wifirelay.sh
+				sleep 6
         fi
 
 

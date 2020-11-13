@@ -29,11 +29,12 @@ You may obtain a copy of the License at
     </div>
     <div id="box-loading"></div>
     <div class="form-wifi" id="form-wifi">
-        <div class="form-row">
+        <div class="form-row" id="ssid-row">
             <div class="title">WiFi名称</div>
-            <div class="input">
+            <div class="input" id="ssid-wrap">
                 <div class="box">
                     <input type="text" class="input-ssid" placeholder="请输入或选择WiFi名称" id="input-ssid" />
+                    <span class="warn-msg hide" id="ssid-warn-msg">请输入或选择WiFi名称</span>
                     <i class="icon-input">
                         <img src="http://192.168.11.123/luci-static/down.png" alt="" width="18" height="18"
                             id="img-arrow">
@@ -42,10 +43,11 @@ You may obtain a copy of the License at
                 </div>
             </div>
         </div>
-        <div class="form-row">
+        <div class="form-row" id="pass-row">
             <div class="title">WiFi密码</div>
-            <div class="input">
+            <div class="input" id="pass-wrap">
                 <input type="text" placeholder="请输入WiFi密码" class="input-pass" id="input-pass">
+                <span class="warn-msg hide" id="pass-warn-msg">请输入WiFi密码</span>
             </div>
         </div>
 
@@ -77,8 +79,20 @@ You may obtain a copy of the License at
     </div>
     <div class="modal " id="modal-tips" style="display: none;">
         <div class="body">
-            <div>配网失败</div>
-            <div>请检查 WiFi 名称和密码</div>
+            <div class="title">配网完成</div>
+            <div class="msg">
+                1. 请查看盒子指示灯，来确认盒子状态或者在小程序查看设备是否在线
+            </div>
+            <div class="msg">
+                2. 盒子在线请手动关闭网页，没在线请重新配网
+            </div>
+            <img class="img-device" src="http://192.168.11.123/luci-static/device.png" alt="">
+            <div class="tips">
+                网络指示灯: 常亮——已配网 / 闪烁——未配网
+            </div>
+            <div class="tips">
+                打印机指示灯：常亮——打印机连接正常
+            </div>
             <div class="btn" id="modal-btn">确定</div>
         </div>
     </div>
@@ -108,9 +122,7 @@ You may obtain a copy of the License at
 
     .form-wifi {
         width: 100%;
-        padding-top: 20px;
-        padding-left: 20px;
-        padding-right: 20px;
+        padding: 0 20px 0 20px;
     }
 
     .form-title {
@@ -216,6 +228,7 @@ You may obtain a copy of the License at
         padding-left: 20px;
         padding-right: 20px;
         box-shadow: 0px 0px 6px rgba(0, 0, 0, 0.2);
+        z-index: 100;
     }
 
     .wifi-item.choose {
@@ -290,7 +303,7 @@ You may obtain a copy of the License at
 
     .modal .body {
         width: 300px;
-        height: 230px;
+        padding: 30px 20px;
         position: absolute;
         top: 50%;
         left: 50%;
@@ -302,16 +315,43 @@ You may obtain a copy of the License at
         background-color: #fff;
         border-radius: 20px;
         color: #222;
-        font-size: 16px;
-        line-height: 30px;
+    }
+
+    .modal .title {
+        font-size: 20px;
+        font-weight: 500;
+        color: #2ED7AE;
+        margin-bottom: 12px;
+    }
+
+    .img-device {
+        width: 90%;
+        margin-bottom: 10px;
+    }
+
+    .modal .msg {
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 24px;
+        margin-bottom: 10px;
+    }
+
+    .modal .tips {
+        font-size: 12px;
+        font-weight: 400;
+        color: #919191;
+        line-height: 20px;
+        text-align: left;
+        width: 100%;
+        margin-bottom: 4px;
     }
 
     .modal .body #modal-btn {
         background: #2ED7AE;
         color: #fff;
-        width: 120px;
+        width: 240px;
         height: 40px;
-        border-radius: 10px;
+        border-radius: 40px;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -329,7 +369,7 @@ You may obtain a copy of the License at
         margin-top: 25px;
     }
 
-    .msg-wrap  .title {
+    .msg-wrap .title {
         display: flex;
         flex-direction: row;
         align-items: center;
@@ -338,13 +378,13 @@ You may obtain a copy of the License at
         width: 100%;
     }
 
-    .msg-wrap  .left {
+    .msg-wrap .left {
         width: 30%;
         height: 2px;
         background-image: linear-gradient(to right, rgba(255, 117, 57, 0), rgba(255, 117, 57, 0.42));
     }
 
-    .msg-wrap  .right {
+    .msg-wrap .right {
         width: 30%;
         height: 2px;
         background-image: linear-gradient(to right, rgba(255, 117, 57, 0.42), rgba(255, 117, 57, 0));
@@ -371,10 +411,32 @@ You may obtain a copy of the License at
         line-height: 17px;
         margin-bottom: 16px;
     }
+
+    .form-row.warn {
+        margin-bottom: 12px;
+    }
+
+    .input.warn input {
+        border: 1px solid red;
+        position: relative;
+        top: 8px;
+    }
+
+    .input.warn .icon-input {
+        top: 8px;
+    }
+
+    .warn-msg {
+        height: 8px;
+        color: red;
+        position: relative;
+        top: 16px;
+        font-size: 14px;
+        margin-bottom: 12px;
+    }
 </style>
 <script>
     var wifirelayEle = document.getElementById('cbi-wifirelay')
-    // var wifirelayEle = null
     if (wifirelayEle) {
         var urlBase = 'http://192.168.11.123/luci-static/'
         var parentForm = wifirelayEle.parentNode
@@ -387,7 +449,6 @@ You may obtain a copy of the License at
         });
         var inputPassEle = document.getElementById('input-pass')
         var oldPassEle = document.getElementById('cbid.wifirelay.wifirelay2g.key')
-       
         var wifiListEle = document.getElementById('wifi-list')
         var oldSsidInputEle = document.getElementById('cbid.wifirelay.wifirelay2g.ssid')
         var ssidInputEle = document.getElementById('input-ssid')
@@ -396,7 +457,39 @@ You may obtain a copy of the License at
             setTimeout(function () {
                 wifiListEle.classList.add('hide')
                 arrowEle.src = urlBase + 'down.png'
-            }, 800)
+                if (ssidInputEle.value === undefined || ssidInputEle.value.trim() === "") {
+                    document.getElementById('ssid-wrap').classList.add('warn')
+                    document.getElementById('ssid-warn-msg').classList.remove('hide')
+                    document.getElementById('ssid-row').classList.add('warn')
+                }
+            }, 500)
+        })
+        ssidInputEle.addEventListener("input", function () {
+            setTimeout(function () {
+                if (ssidInputEle.value !== undefined && ssidInputEle.value.trim() !== "") {
+                    document.getElementById('ssid-wrap').classList.remove('warn')
+                    document.getElementById('ssid-warn-msg').classList.add('hide')
+                    document.getElementById('ssid-row').classList.remove('warn')
+                }
+            }, 500)
+        })
+        inputPassEle.addEventListener("focusout", function () {
+            setTimeout(function () {
+                if (inputPassEle.value === undefined || inputPassEle.value.trim() === "") {
+                    document.getElementById('pass-wrap').classList.add('warn')
+                    document.getElementById('pass-warn-msg').classList.remove('hide')
+                    document.getElementById('pass-row').classList.add('warn')
+                }
+            }, 500)
+        })
+        inputPassEle.addEventListener("input", function () {
+            setTimeout(function () {
+                if (inputPassEle.value !== undefined && inputPassEle.value.trim() !== "") {
+                    document.getElementById('pass-wrap').classList.remove('warn')
+                    document.getElementById('pass-warn-msg').classList.add('hide')
+                    document.getElementById('pass-row').classList.remove('warn')
+                }
+            }, 500)
         })
         arrowEle.addEventListener('click', function () {
             if (wifiListEle.classList.contains('hide')) {
@@ -409,8 +502,8 @@ You may obtain a copy of the License at
         })
         var wifirelayLoadingEle = document.getElementById('cbi-apply-wifirelay')
         if (wifirelayLoadingEle) {
-            ssidInputEle.value = oldSsidInputEle.value
-            inputPassEle.value = oldPassEle.value
+            ssidInputEle.value = oldSsidInputEle.value.trim()
+            inputPassEle.value = oldPassEle.value.trim()
             document.getElementById('box-loading').append(wifirelayLoadingEle)
             var newDivEle = document.createElement('div');
             newDivEle.innerHTML = "配网中"
@@ -440,15 +533,31 @@ You may obtain a copy of the License at
             }
         }
 
-      
         var btnConnectEle = document.getElementById('btn-connect')
         btnConnectEle.addEventListener("click", function () {
-            oldSsidInputEle.value = ssidInputEle.value
-            oldPassEle.value = inputPassEle.value
-            var event = new UIEvent('change');
-            oldSsidInputEle.dispatchEvent(event);
-            oldPassEle.dispatchEvent(event);
-            document.getElementsByClassName('cbi-button-apply')[0].click()
+            let flag = true
+            if (ssidInputEle.value === undefined || ssidInputEle.value.trim() === "") {
+                document.getElementById('ssid-wrap').classList.add('warn')
+                document.getElementById('ssid-warn-msg').classList.remove('hide')
+                document.getElementById('ssid-row').classList.add('warn')
+                flag = false
+            }
+            if (inputPassEle.value === undefined || inputPassEle.value.trim() === "") {
+                document.getElementById('pass-wrap').classList.add('warn')
+                document.getElementById('pass-warn-msg').classList.remove('hide')
+                document.getElementById('pass-row').classList.add('warn')
+                flag = false
+            }
+            if (flag) {
+                oldSsidInputEle.value = ToCDB( ssidInputEle.value.trim())
+                oldPassEle.value = ToCDB(inputPassEle.value.trim())
+                var event = new UIEvent('change');
+                oldSsidInputEle.dispatchEvent(event);
+                oldPassEle.dispatchEvent(event);
+                setTimeout(()=>{
+                    document.getElementsByClassName('cbi-button-apply')[0].click()
+                },300)
+            }
         })
 
         function getWifiList() {
@@ -523,6 +632,11 @@ You may obtain a copy of the License at
             chooseWifiEle.appendChild(imgChooseEle)
             setTimeout(() => {
                 wifiListEle.classList.add('hide')
+                if (ssidInputEle.value !== undefined && ssidInputEle.value.trim() !== "") {
+                    document.getElementById('ssid-wrap').classList.remove('warn')
+                    document.getElementById('ssid-warn-msg').classList.add('hide')
+                    document.getElementById('ssid-row').classList.remove('warn')
+                }
             }, 500);
         }
 
@@ -540,6 +654,22 @@ You may obtain a copy of the License at
         document.getElementById('modal-btn').onclick = function () {
             document.getElementById('modal-tips').style.display = 'none'
             checkTimer = window.setInterval(checkLodingState, 1000)
+        }
+
+        function ToCDB(str) {
+            var tmp = "";
+            for (var i = 0; i < str.length; i++) {
+                if (str.charCodeAt(i) == 12288) {
+                    tmp += String.fromCharCode(str.charCodeAt(i) - 12256);
+                    continue;
+                }
+                if (str.charCodeAt(i) > 65280 && str.charCodeAt(i) < 65375) {
+                    tmp += String.fromCharCode(str.charCodeAt(i) - 65248);
+                } else {
+                    tmp += String.fromCharCode(str.charCodeAt(i));
+                }
+            }
+            return tmp
         }
     } else {
         document.getElementById('newDiv').classList.add("hide")

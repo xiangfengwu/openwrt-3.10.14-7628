@@ -19,6 +19,7 @@ do
                 echo 1 > /tmp/state/xfwuNetledstate
                 pnum=0
                 npnum=1
+				echo "xfwu---`date`---enjoy shopping internet----" >> /tmp/iot/$YJIMEI.txt
             fi
             if [ "$knum2" = "1" ]; then
                 if [ "$YJIMEI" != "" ]; then 
@@ -30,6 +31,7 @@ do
 			#knum2=0
                         echo "xfwu-----YJSECRET:$YJSECRET" > /dev/console
                         echo "xfwu-----YJIMEI:$YJIMEI" > /dev/console
+						echo "xfwu---`date`---GET THE YJSECRET:$YJSECRET----by YJIMEI:$YJIMEI-------" >> /tmp/iot/$YJIMEI.txt
 			sleep 3
 		      fi
                 fi
@@ -40,11 +42,12 @@ do
                         echo 3 > /tmp/state/xfwuNetledstate
                         npnum=0
                         pnum=1
+						echo "xfwu---`date`---NO shopping internet----" >> /tmp/iot/$YJIMEI.txt
                 fi
 		kill ${mqttPID}
                 sleep 2          
 				/opt/bin/wifirelay.sh
-				sleep 6
+				sleep 8
         fi
 
 

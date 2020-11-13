@@ -33,12 +33,14 @@ get_prname() {
 
 case $ACTION in
 	add)
+		echo "xfwu---`date`---usb connect----" >> /tmp/iot/$YJIMEI.txt
 		#get printer
 		echo 1 > /tmp/state/xfwuPrinterledstate
 		printername=`get_prname`
 		printeruri=`get_pruri`
 		if [ -n "$printername" ]; then
 			echo "xfwu--------ppppppppppppppppppppppppppp" > /dev/console
+			echo "xfwu---`date`---report prname:${printername}----" >> /tmp/iot/$YJIMEI.txt
 			report_prname "$printername"
 			lpadmin -p ${printername} -E -m raw -v ${printeruri}
 			uci -q set aliyun.iot.printername="$printername"
@@ -48,9 +50,11 @@ case $ACTION in
 		;;
 	remove)
 		echo "`date` Printer removed" >> /tmp/usbevent.dbg
+		echo "xfwu---`date`---usb removed----" >> /tmp/iot/$YJIMEI.txt
 		echo "xfwu--------qqqqqqqqqqqqqqqqqqqqqqqqqqqqqq" > /dev/console
 		#get printer
 		echo 3 > /tmp/state/xfwuPrinterledstate
+		echo "xfwu---`date`---report prname $printername----" >> /tmp/iot/$YJIMEI.txt
 		printername="none"
 		report_prname "$printername"
 		;;

@@ -1,5 +1,5 @@
 
-m = Map("wifirelay", translate("连接WiFi"),translate("设置名称和密码连接可上网的WiFi"))
+m = Map("wifirelay", translate("设置名称和密码"),translate("设置名称和密码连接可上网的WiFi"))
 
 s = m:section(NamedSection, "wifirelay2g", translate("Wifi Relay"))
 s.anonymous = true

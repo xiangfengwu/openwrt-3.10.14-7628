@@ -23,163 +23,656 @@ You may obtain a copy of the License at
 	local categories = disp.node_childs(tree)
 %>
 </div>
+<div id="newDiv">
+    <div class="img-box" id="img-box">
+        <img src="http://192.168.11.123/luci-static/bg.png" alt="">
+    </div>
+    <div id="box-loading"></div>
+    <div class="form-wifi" id="form-wifi">
+        <div class="form-row" id="ssid-row">
+            <div class="title">WiFi名称</div>
+            <div class="input" id="ssid-wrap">
+                <div class="box">
+                    <input type="text" class="input-ssid" placeholder="请输入或选择WiFi名称" id="input-ssid" />
+                    <span class="warn-msg hide" id="ssid-warn-msg">请输入或选择WiFi名称</span>
+                    <i class="icon-input">
+                        <img src="http://192.168.11.123/luci-static/down.png" alt="" width="18" height="18"
+                            id="img-arrow">
+                    </i>
+                    <div class="wifi-list hide" id="wifi-list"> </div>
+                </div>
+            </div>
+        </div>
+        <div class="form-row" id="pass-row">
+            <div class="title">WiFi密码</div>
+            <div class="input" id="pass-wrap">
+                <input type="text" placeholder="请输入WiFi密码" class="input-pass" id="input-pass">
+                <span class="warn-msg hide" id="pass-warn-msg">请输入WiFi密码</span>
+            </div>
+        </div>
 
+        <div class="form-action">
+            <div class="btn" id="btn-connect">立即连接</div>
+        </div>
+    </div>
+    <div class="msg-wrap">
+        <div class="title">
+            <div class="left"></div>
+            <div class="middle">温馨提示</div>
+            <div class="right"></div>
+        </div>
+        <div class="section">
+            <li>
+                若WiFi列表中未发现所要连接的WiFi，请手动输入WiFi名称；
+            </li>
+        </div>
+        <div class="section">
+            <li>
+                若配网失败（请核对WiFi名称或密码），退出并再次连接盒子热点进入该页面，重新配网；
+            </li>
+        </div>
+        <div class="section">
+            <li>
+                配网完成（网络指示灯常亮），将自动退出该页面（若长时间无反应，可手动关闭）；
+            </li>
+        </div>
+        <div class="section">
+            <li>
+                小程序或APP显示设备在线，表示已配网成功；
+            </li>
+        </div>
+        <div class="section">
+            <li>
+                配网成功后，请在手机设置里忽略/移除此盒子热点，以免影响手机连接正常WiFi上网。
+            </li>
+        </div>
+    </div>
+    <div class="modal " id="modal-tips" style="display: none;">
+        <div class="body">
+            <div class="title">配网完成</div>
+            <div class="msg">
+                1. 请查看盒子指示灯，来确认盒子状态或者在小程序查看设备是否在线
+            </div>
+            <div class="msg">
+                2. 盒子在线请手动关闭网页，没在线请重新配网
+            </div>
+            <img class="img-device" src="http://192.168.11.123/luci-static/device.png" alt="">
+            <div class="tips">
+                网络指示灯: 常亮——已配网 / 闪烁——未配网
+            </div>
+            <div class="tips">
+                打印机指示灯：常亮——打印机连接正常
+            </div>
+            <div class="btn" id="modal-btn">确定</div>
+        </div>
+    </div>
+    <div class="btn-update" id="btn-update"></div>
+</div>
 <style>
-  .hide {
-    display: none;
-  }
+    body {
+        padding: 0;
+        width: 100vw;
+        overflow-x: hidden;
+    }
 
-  header {
-    display: none;
-  }
+    div {
+        box-sizing: border-box;
+    }
 
-  .maincontent {
-    width: 100%;
-    height: 100%;
-  }
+    .hide,
+    header,
+    #box-loading legend,
+    #box-loading #cbi-apply-wifirelay-status {
+        display: none;
+    }
 
-  .cbi-value-title {
-    width: 80px !important;
-  }
+    .img-box img {
+        width: 100%;
+    }
 
-  form .input,
-  form .cbi-value-field {
-    margin-left: 100px !important;
-  }
+    .form-wifi {
+        width: 100%;
+        padding-top: 20px;
+        padding-left: 20px;
+        padding-right: 20px;
+    }
 
-  #cbi-wifirelay-wifirelay2g-enabled,
-  #cbi-wifirelay-wifirelay2g-notscan {
-    display: none;
-  }
+    .form-title {
+        font-size: 18px;
+        font-weight: 500;
+        color: #222222;
+        line-height: 32px;
+    }
 
-  .cbi-button-reset {
-    display: none;
-  }
+    .form-row {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        height: 60px;
+    }
 
-  .cbi-button-save {
-    display: none;
-  }
+    .form-wifi .title {
+        width: 90px;
+        font-size: 14px;
+        font-weight: 400;
+        color: #222222;
+    }
 
-  .cbi-button-apply {
-    width: 120px !important;
-    height: 40px !important;
-    font-size: 18px;
-  }
+    .form-wifi .input {
+        width: 100%;
+    }
 
-  .wifi_list {
-    width: 208px;
-    max-height: 150px;
-    padding-left: 3px;
-    overflow: scroll;
-    border: 1px solid rgba(113, 113, 113, 0.2);
-  }
+    .form-wifi .input input {
+        width: 100%;
+        height: 36px;
+        border-radius: 8px;
+        border: 1px solid #F0F0F0;
+        padding-left: 18px;
+        color: #000 !important;
+        box-shadow: none;
+        -webkit-appearance: none;
+        /*去除系统默认的样式*/
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    }
 
-  .wifi_list div {
-    list-style: none;
-    height: 30px;
-    line-height: 30px;
-    font-size: 14px;
-  }
+    .form-wifi input::-webkit-input-placeholder {
+        font-size: 14px;
+        font-weight: 400;
+        color: #BDBDBD;
+    }
 
-  .btn-update {
-    position: fixed;
-    bottom: 10px;
-    left: 10px;
-    height: 50px;
-    width: 50px;
-  }
+    .form-wifi input:focus {
+        border: 1px solid #2ED7AE;
+    }
+
+    .form-action {
+        display: flex;
+        width: 100%;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        margin-top: 30px;
+    }
+
+    .form-action .btn {
+        background: #046E5A;
+        color: #FFFFFF;
+        width: 100%;
+        height: 36px;
+        border-radius: 18px;
+        font-size: 14px;
+        font-weight: 400;
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        border: none;
+    }
+
+    .box {
+        width: 100%;
+        position: relative;
+    }
+
+    .box .icon-input {
+        width: 18px;
+        height: 18px;
+        position: absolute;
+        top: -2px;
+        right: 0px;
+        background-color: transparent;
+        border: 10px solid transparent;
+    }
+
+    .box .input-ssid {
+        padding-left: 20px;
+        height: 36px;
+    }
+
+    .wifi-list {
+        position: absolute;
+        top: 42px;
+        background: #fff;
+        width: 100%;
+        max-height: 250px;
+        overflow: scroll;
+        border-radius: 6px;
+        padding-left: 20px;
+        padding-right: 20px;
+        box-shadow: 0px 0px 6px rgba(0, 0, 0, 0.2);
+        z-index: 100;
+    }
+
+    .wifi-item.choose {
+        color: #046E5A;
+    }
+
+    .wifi-item {
+        height: 50px;
+        line-height: 50px;
+        font-size: 14px;
+        color: #222;
+        display: flex;
+        position: relative;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .wifi-item:after {
+        content: " ";
+        width: 100%;
+        height: 1px;
+        background: #F0F0F0;
+        position: absolute;
+        bottom: -1px;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    .wifi-item:last-child::after {
+        width: 0;
+    }
+
+    .btn-update {
+        position: fixed;
+        bottom: 10px;
+        left: 10px;
+        height: 50px;
+        width: 50px;
+        background: #fff;
+        opacity: 0;
+    }
+
+    .div-wifiName {
+        /* max-width: 120px; */
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    #box-loading {
+        width: 100vw;
+        height: auto;
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+    }
+
+    #box-loading #cbi-apply-wifirelay {
+        margin-top: 30px;
+    }
+
+    .modal {
+        width: 100vw;
+        height: 100vh;
+        position: fixed;
+        top: 0;
+        background-color: rgba(153, 153, 153, 0.8);
+    }
+
+    .modal .body {
+        width: 80%;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background-color: #fff;
+        border-radius: 20px;
+        color: #222;
+        font-size: 16px;
+        line-height: 30px;
+        padding: 20px;
+    }
+
+    .modal .title {
+        font-size: 20px;
+        font-weight: 500;
+        color: #046E5A;
+        margin-bottom: 12px;
+    }
+
+    .img-device {
+        width: 90%;
+        margin-bottom: 10px;
+    }
+
+    .modal .msg {
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 24px;
+        margin-bottom: 10px;
+    }
+
+    .modal .tips {
+        font-size: 12px;
+        font-weight: 400;
+        color: #919191;
+        line-height: 20px;
+        text-align: left;
+        width: 100%;
+        margin-bottom: 4px;
+    }
+
+    .modal .body #modal-btn {
+        background: #046E5A;
+        color: #fff;
+        width: 240px;
+        height: 40px;
+        border-radius: 40px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: 400px;
+        margin-top: 20px;
+    }
+
+    .msg-wrap {
+        width: 100vw;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 25px;
+    }
+
+    .msg-wrap .title {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 16px;
+        width: 100%;
+    }
+
+    .msg-wrap .left {
+        width: 30%;
+        height: 2px;
+        background-image: linear-gradient(to right, rgba(227, 227, 227, 0), rgba(227, 227, 227, 0.42));
+    }
+
+    .msg-wrap .right {
+        width: 30%;
+        height: 2px;
+        background-image: linear-gradient(to right, rgba(227, 227, 227, 0.42), rgba(227, 227, 227, 0));
+    }
+
+    .msg-wrap .middle {
+        width: 90px;
+        height: 16px;
+        font-size: 16px;
+        font-weight: 500;
+        text-align: center;
+        color: #9B9B9B;
+        line-height: 16px;
+        margin-left: 10px;
+        margin-right: 10px;
+    }
+
+    .msg-wrap .section {
+        width: 323px;
+        font-size: 12px;
+        font-weight: 400;
+        text-align: left;
+        color: #999999;
+        line-height: 17px;
+        margin-bottom: 16px;
+    }
+
+    .form-row.warn {
+        margin-bottom: 12px;
+    }
+
+    .input.warn input {
+        border: 1px solid red;
+        position: relative;
+        top: 8px;
+    }
+
+    .input.warn .icon-input {
+        top: 8px;
+    }
+
+    .warn-msg {
+        height: 8px;
+        color: red;
+        position: relative;
+        top: 16px;
+        font-size: 14px;
+        margin-bottom: 12px;
+    }
 </style>
 <script>
-
-  var ssidInputEle = document.getElementById('cbid.wifirelay.wifirelay2g.ssid')
-  var updateBtnEle = document.createElement('div');
-  updateBtnEle.id = 'btn-update';
-  updateBtnEle.setAttribute('class', 'btn-update');
-  updateBtnEle.onclick = function () {
-    var aArray = document.getElementsByTagName('a')
-    var i
-    for (i = 0; i < aArray.length; i++) {
-      if (aArray[i].href.indexOf('system/flashops') > -1) {
-        console.log(aArray[i])
-        aArray[i].click()
-        return;
-      }
-    }
-  }
-  ssidInputEle.insertAdjacentElement('afterEnd', updateBtnEle)
-
-  var submitEle = document.getElementsByClassName('cbi-button cbi-button-apply')[0]
-  submitEle.setAttribute('value', '连接')
-
-  getWifiList()
-
-  function getWifiList() {
-    var url = "http://192.168.11.123/luci-static/xfwuWifiList.txt"
-    var xmlHttp;
-    if (window.ActiveXObject) {
-      try {
-        xmlHttp = new ActiveXObject("Microsoft.XMLHTTP");
-      } catch (e) {
-        xmlHttp = false;
-      }
-    } else {
-
-      try {
-        xmlHttp = new XMLHttpRequest();
-      } catch (e) {
-        xmlHttp = false;
-      }
-    }
-    if (!xmlHttp) {
-      console.log("返回创建的对象或显示错误信息");
-    }
-    xmlHttp.onreadystatechange = function () {
-      if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
-        var str = xmlHttp.responseText;
-        var re = new RegExp("(?=\\d+).*(.+\\:)", "g");
-        var myArray = str.match(re);
-        var wifiList = []
-        myArray.forEach(item => {
-          var temp = item.split(/\s+/)
-          if (temp.length > 2) {
-            wifiList.push(temp[1])
-          }
-        })
-        var ssidInputEle = document.getElementById('cbid.wifirelay.wifirelay2g.ssid')
-        var wifiListDiv = document.createElement('div');
-        wifiListDiv.id = 'wifi_list';
-        wifiListDiv.setAttribute('class', 'hide');
-        var htmlStr = ''
-        for (i = 0; i < wifiList.length; i++) {
-          htmlStr += `<div onclick="setWifiName('${wifiList[i]}')">${wifiList[i]}</div>`
-        }
-        wifiListDiv.innerHTML = htmlStr
-        ssidInputEle.insertAdjacentElement('afterEnd', wifiListDiv)
-
-        ssidInputEle.addEventListener("focus", function () {
-          wifiListDiv.setAttribute('class', 'wifi_list')
-        })
-
+    var wifirelayEle = document.getElementById('cbi-wifirelay')
+    // var wifirelayEle = null
+    if (wifirelayEle) {
+        var urlBase = 'http://192.168.11.123/luci-static/'
+        var parentForm = wifirelayEle.parentNode
+        var loadingFlag = false
+        var firstFlag = true
+        var checkTimer = null
+        parentForm.classList.add('hide')
+        document.addEventListener('gesturestart', function (event) {
+            event.preventDefault();
+        });
+        var inputPassEle = document.getElementById('input-pass')
+        var oldPassEle = document.getElementById('cbid.wifirelay.wifirelay2g.key')
+        var wifiListEle = document.getElementById('wifi-list')
+        var oldSsidInputEle = document.getElementById('cbid.wifirelay.wifirelay2g.ssid')
+        var ssidInputEle = document.getElementById('input-ssid')
+        var arrowEle = document.getElementById('img-arrow')
         ssidInputEle.addEventListener("focusout", function () {
-          setTimeout(function () {
-            wifiListDiv.setAttribute('class', 'hide')
-          }, 300)
+            setTimeout(function () {
+                wifiListEle.classList.add('hide')
+                arrowEle.src = urlBase + 'down.png'
+                if (ssidInputEle.value === undefined || ssidInputEle.value.trim() === "") {
+                    document.getElementById('ssid-wrap').classList.add('warn')
+                    document.getElementById('ssid-warn-msg').classList.remove('hide')
+                    document.getElementById('ssid-row').classList.add('warn')
+                }
+            }, 800)
+        })
+        ssidInputEle.addEventListener("input", function () {
+            setTimeout(function () {
+                if (ssidInputEle.value !== undefined && ssidInputEle.value.trim() !== "") {
+                    document.getElementById('ssid-wrap').classList.remove('warn')
+                    document.getElementById('ssid-warn-msg').classList.add('hide')
+                    document.getElementById('ssid-row').classList.remove('warn')
+                }
+            }, 800)
+        })
+        inputPassEle.addEventListener("focusout", function () {
+            setTimeout(function () {
+                if (inputPassEle.value === undefined || inputPassEle.value.trim() === "") {
+                    document.getElementById('pass-wrap').classList.add('warn')
+                    document.getElementById('pass-warn-msg').classList.remove('hide')
+                    document.getElementById('pass-row').classList.add('warn')
+                }
+            }, 800)
+        })
+        inputPassEle.addEventListener("input", function () {
+            setTimeout(function () {
+                if (inputPassEle.value !== undefined && inputPassEle.value.trim() !== "") {
+                    document.getElementById('pass-wrap').classList.remove('warn')
+                    document.getElementById('pass-warn-msg').classList.add('hide')
+                    document.getElementById('pass-row').classList.remove('warn')
+                }
+            }, 800)
+        })
+        arrowEle.addEventListener('click', function () {
+            if (wifiListEle.classList.contains('hide')) {
+                wifiListEle.classList.remove('hide')
+                arrowEle.src = urlBase + 'up.png'
+            } else {
+                wifiListEle.classList.add('hide')
+                arrowEle.src = urlBase + 'down.png'
+            }
+        })
+        var wifirelayLoadingEle = document.getElementById('cbi-apply-wifirelay')
+        if (wifirelayLoadingEle) {
+            ssidInputEle.value = oldSsidInputEle.value
+            inputPassEle.value = oldPassEle.value
+            document.getElementById('box-loading').append(wifirelayLoadingEle)
+            var newDivEle = document.createElement('div');
+            newDivEle.innerHTML = "配网中"
+            newDivEle.style.marginTop = "20px"
+            newDivEle.style.textAlign = "center"
+            wifirelayLoadingEle.appendChild(newDivEle)
+            checkTimer = window.setInterval(checkLodingState, 1000)
+        }
+        function checkLodingState() {
+            var display = wifirelayLoadingEle.style.display
+            if (firstFlag) {
+                // 第一次触发 默认是在配网中
+                firstFlag = false
+                loadingFlag = true
+            } else {
+                if (display === "none" && loadingFlag === true) {
+                    // 配网结束 
+                    loadingFlag = false
+                    clearInterval(checkTimer)
+                    setTimeout(() => {
+                        document.getElementById('modal-tips').style.display = 'block'
+                    }, 500);
+                } else if (display !== "none" && loadingFlag === false && firstFlag === false) {
+                    // 进行配网中 - 重新进行配网
+                    loadingFlag = true
+                }
+            }
+        }
+
+        var btnConnectEle = document.getElementById('btn-connect')
+        btnConnectEle.addEventListener("click", function () {
+            let flag = true
+            if (ssidInputEle.value === undefined || ssidInputEle.value.trim() === "") {
+                document.getElementById('ssid-wrap').classList.add('warn')
+                document.getElementById('ssid-warn-msg').classList.remove('hide')
+                document.getElementById('ssid-row').classList.add('warn')
+                flag = false
+            }
+            if (inputPassEle.value === undefined || inputPassEle.value.trim() === "") {
+                document.getElementById('pass-wrap').classList.add('warn')
+                document.getElementById('pass-warn-msg').classList.remove('hide')
+                document.getElementById('pass-row').classList.add('warn')
+                flag = false
+            }
+            if (flag) {
+                oldSsidInputEle.value = ssidInputEle.value.trim()
+                oldPassEle.value = inputPassEle.value.trim()
+                var event = new UIEvent('change');
+                oldSsidInputEle.dispatchEvent(event);
+                oldPassEle.dispatchEvent(event);
+                document.getElementsByClassName('cbi-button-apply')[0].click()
+            }
         })
 
+        function getWifiList() {
+            var url = urlBase + "xfwuWifiList.txt"
+            var xmlHttp;
+            if (window.ActiveXObject) {
+                try {
+                    xmlHttp = new ActiveXObject("Microsoft.XMLHTTP");
+                } catch (e) {
+                    xmlHttp = false;
+                }
+            } else {
+                try {
+                    xmlHttp = new XMLHttpRequest();
+                } catch (e) {
+                    xmlHttp = false;
+                }
+            }
+            if (!xmlHttp) console.log("error xmlHttp")
 
-      }
+            xmlHttp.onreadystatechange = function () {
+                if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+                    var str = xmlHttp.responseText;
+                    const strArr = str.split('\n')
+                    if (strArr.length > 2) {
+                        var wifiList = removeDuplicate(strArr)
+                        // console.log(wifiList)
+                        var wifiListDiv = document.getElementById('wifi-list');
+                        var htmlStr = ''
+                        for (i = 0; i < wifiList.length; i++) {
+                            htmlStr += `<div onclick="setWifiName('${wifiList[i]}')" id="wifi_${wifiList[i]}" class="wifi-item"><div class="div-wifiName"> ${wifiList[i]}</div></div>`
+                        }
+                        wifiListDiv.innerHTML = htmlStr
+                    }
+                }
+            }
+            xmlHttp.open("GET", url, true);
+            xmlHttp.send(null);
+        }
+
+        getWifiList()
+
+        function removeDuplicate(arr) {
+            var resultArr = [];
+            var reg = /\w+:\w+:\w+:\w+:\w+/
+            for (var i = arr.length - 1; i > 0; i--) {
+                var item = arr[i];
+                if (item.length > 0 && resultArr.indexOf(item) < 0 && item.search(reg) === -1) {
+                    resultArr.push(item);
+                }
+            }
+            return resultArr;
+        }
+
+        function setWifiName(name) {
+            var temp = document.getElementsByClassName('choose')[0]
+            if (temp) temp.classList.remove('choose')
+            var oldImgEle = document.getElementById("img-choose");
+            if (oldImgEle) oldImgEle.remove();
+            var ssidEle = document.getElementById('cbid.wifirelay.wifirelay2g.ssid')
+            var inputSSidEle = document.getElementById('input-ssid')
+            ssidEle.value = name
+            inputSSidEle.value = name
+            inputSSidEle.classList.add('input-chosen')
+            var chooseWifiEle = document.getElementById('wifi_' + name)
+            chooseWifiEle.classList.add('choose')
+            var imgChooseEle = document.createElement('img');
+            imgChooseEle.id = 'img-choose'
+            imgChooseEle.src = urlBase + 'selected.png'
+            imgChooseEle.width = 12
+            imgChooseEle.height = 12
+            chooseWifiEle.appendChild(imgChooseEle)
+            setTimeout(() => {
+                wifiListEle.classList.add('hide')
+                if (ssidInputEle.value !== undefined && ssidInputEle.value.trim() !== "") {
+                    document.getElementById('ssid-wrap').classList.remove('warn')
+                    document.getElementById('ssid-warn-msg').classList.add('hide')
+                    document.getElementById('ssid-row').classList.remove('warn')
+                }
+            }, 500);
+        }
+
+        var updateBtnEle = document.getElementById('btn-update');
+        updateBtnEle.onclick = function () {
+            var aArray = document.getElementsByTagName('a')
+            var i
+            for (i = 0; i < aArray.length; i++) {
+                if (aArray[i].href.indexOf('system/flashops') > -1) {
+                    aArray[i].click()
+                    return;
+                }
+            }
+        }
+        document.getElementById('modal-btn').onclick = function () {
+            document.getElementById('modal-tips').style.display = 'none'
+            checkTimer = window.setInterval(checkLodingState, 1000)
+        }
+    } else {
+        document.getElementById('newDiv').classList.add("hide")
+        document.getElementsByTagName('header')[0].style.display = 'block'
+        document.getElementById('maincontent').style.display = 'block'
     }
-    xmlHttp.open("GET", url, true);
-    xmlHttp.send(null);
-  }
-  function setWifiName(name) {
-    document.getElementById('cbid.wifirelay.wifirelay2g.ssid').value = name
-  }
-
-  function upgradePage() {
-    var aArray = document.getElementsByTagName("a")
-    console.log(aArray)
-  }
 </script>
 </body>
 

@@ -19,13 +19,15 @@ do
                 echo 1 > /tmp/state/xfwuNetledstate
                 pnum=0
                 npnum=1
+				echo "xfwu---`date`---enjoy shopping internet----" >> /tmp/iot/$YJIMEI.txt
             fi
             if [ "$knum2" = "1" ]; then
                 if [ "$YJIMEI" != "" ]; then 
                        # YJSECRET=$(cat /opt/bin/xfwusecret|sed 's/"//g')
                        # rm /opt/bin/xfwusecret
                         #curl --connect-timeout 3 --max-time 3 --retry 5 -G http://192.168.0.200:8081/v3/common/sec2?itg=${YJIMEI} -o /opt/bin/xfwusecret
-                      if [ "$YJSECRET" = "" ]; then  
+                      if [ "$YJSECRET" = "" ]; then 
+					  echo "xfwu---`date`---GET THE YJSECRET:$YJSECRET----by YJIMEI:$YJIMEI-------" >> /tmp/iot/$YJIMEI.txt
 			curl --connect-timeout 3 --max-time 3 --retry 5 -k -G https://www.tuyaji.com.cn/cloudprintv2-wxapplet-box/v3/common/sec2?itg=${YJIMEI} -o /opt/bin/xfwusecret
 			#knum2=0
                         echo "xfwu-----YJSECRET:$YJSECRET" > /dev/console
@@ -40,11 +42,12 @@ do
                         echo 3 > /tmp/state/xfwuNetledstate
                         npnum=0
                         pnum=1
+						echo "xfwu---`date`---NO shopping internet----" >> /tmp/iot/$YJIMEI.txt
                 fi
 				kill ${mqttPID}
                 sleep 2
 				/opt/bin/wifirelay.sh
-				sleep 6
+				sleep 8
         fi
 
 

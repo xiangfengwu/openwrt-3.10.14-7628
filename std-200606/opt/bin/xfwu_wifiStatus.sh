@@ -56,6 +56,7 @@ iwpriv ra0 set SiteSurvey=2&& sleep 1 &&iwpriv ra0 get_site_survey|awk '{if (NR>
 	if [ "$LENX" != "4" ]; then
       	      if [ "$YJIMEI" != "" ]; then
                  if [ "$YJSECRET" != "" ]; then
+				echo "xfwu---`date`---start mqtt to iot----" >> /tmp/iot/$YJIMEI.txt 
 		     echo "xfwu----------mqtt to start" > /dev/console 
 	             /opt/bin/mqtt-basic-demo -p a1Y72Hurhna  -d ${YJIMEI} -s ${YJSECRET} > /tmp/iot/xfwuMqtt.log
 	             sleep 3

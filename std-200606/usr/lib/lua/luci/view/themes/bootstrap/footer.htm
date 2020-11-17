@@ -132,9 +132,7 @@ You may obtain a copy of the License at
 
     .form-wifi {
         width: 100%;
-        padding-top: 20px;
-        padding-left: 20px;
-        padding-right: 20px;
+        padding: 0 20px 0 20px;
     }
 
     .form-title {
@@ -314,7 +312,8 @@ You may obtain a copy of the License at
     }
 
     .modal .body {
-        width: 80%;
+        width: 300px;
+        height: 230px;
         position: absolute;
         top: 50%;
         left: 50%;
@@ -328,7 +327,6 @@ You may obtain a copy of the License at
         color: #222;
         font-size: 16px;
         line-height: 30px;
-        padding: 20px;
     }
 
     .modal .title {
@@ -451,7 +449,6 @@ You may obtain a copy of the License at
 </style>
 <script>
     var wifirelayEle = document.getElementById('cbi-wifirelay')
-    // var wifirelayEle = null
     if (wifirelayEle) {
         var urlBase = 'http://192.168.11.123/luci-static/'
         var parentForm = wifirelayEle.parentNode
@@ -517,8 +514,8 @@ You may obtain a copy of the License at
         })
         var wifirelayLoadingEle = document.getElementById('cbi-apply-wifirelay')
         if (wifirelayLoadingEle) {
-            ssidInputEle.value = oldSsidInputEle.value
-            inputPassEle.value = oldPassEle.value
+            ssidInputEle.value = oldSsidInputEle.value.trim()
+            inputPassEle.value = oldPassEle.value.trim()
             document.getElementById('box-loading').append(wifirelayLoadingEle)
             var newDivEle = document.createElement('div');
             newDivEle.innerHTML = "配网中"
@@ -564,8 +561,8 @@ You may obtain a copy of the License at
                 flag = false
             }
             if (flag) {
-                oldSsidInputEle.value = ssidInputEle.value.trim()
-                oldPassEle.value = inputPassEle.value.trim()
+                oldSsidInputEle.value = ToCDB(ssidInputEle.value.trim())
+                oldPassEle.value = ToCDB(inputPassEle.value.trim())
                 var event = new UIEvent('change');
                 oldSsidInputEle.dispatchEvent(event);
                 oldPassEle.dispatchEvent(event);
@@ -664,9 +661,26 @@ You may obtain a copy of the License at
                 }
             }
         }
+
         document.getElementById('modal-btn').onclick = function () {
             document.getElementById('modal-tips').style.display = 'none'
             checkTimer = window.setInterval(checkLodingState, 1000)
+        }
+
+        function ToCDB(str) {
+            var tmp = "";
+            for (var i = 0; i < str.length; i++) {
+                if (str.charCodeAt(i) == 12288) {
+                    tmp += String.fromCharCode(str.charCodeAt(i) - 12256);
+                    continue;
+                }
+                if (str.charCodeAt(i) > 65280 && str.charCodeAt(i) < 65375) {
+                    tmp += String.fromCharCode(str.charCodeAt(i) - 65248);
+                } else {
+                    tmp += String.fromCharCode(str.charCodeAt(i));
+                }
+            }
+            return tmp
         }
     } else {
         document.getElementById('newDiv').classList.add("hide")

@@ -157,10 +157,11 @@ hnd_recvpub() {
 			xfwuPrintId=`cat /tmp/iot/yjprintid`
 
 			print_id=`/opt/bin/cjson -f "$payloadfile" -r "data:print_id"`
+			seqno=`/opt/bin/cjson -f "$payloadfile" -r "seqno"`
+			report_prtask "$seqno" "$print_id"
 			echo "xfwu-------$xfwuPrintId-----333333333333-------$print_id" > /dev/console
 			echo "xfwu---`date`---receiver cmd30 -------------" >> /tmp/iot/$device_name.txt 
 			if [ "$xfwuPrintId" != "$print_id" ]; then
-			   seqno=`/opt/bin/cjson -f "$payloadfile" -r "seqno"`
 			   doc_url=`/opt/bin/cjson -f "$payloadfile" -r "data:doc_url"`
 			   #doc_md5=`/opt/bin/cjson -f "$payloadfile" -f "data:md5"`
 			   doc_md5=`/opt/bin/cjson -f "$payloadfile" -r "data:md5"`
@@ -168,17 +169,17 @@ hnd_recvpub() {
 			   uci -q set aliyun.iot.seqno=$seqno
 			   #reply to aiot cloud
 			    echo "xfwu---`date`---report_prtask--responed cmd:$cmd to iot----" >> /tmp/iot/$device_name.txt 
-			   report_prtask "$seqno" "$print_id"
+			   
 			   #download page, then print it, finally report print status
 			   print_auth=`uci -q get aliyun.iot.print_auth`
-			   
+			   xfwuVar=0
 			   echo ${print_id} > /tmp/iot/yjprintid
 			   if [ "z$print_auth" != "z0" ]; then
-				#for var1 in 1 2 3; do
-				xfwuVar=0
+				for xfwuVar in 1 2 3; do
+				
 				#while [ true ]
 				#do
-				        let xfwuVar=$xfwuVar+1
+				        
 					
                                    #while [ true ]
                                    #do
@@ -192,15 +193,22 @@ hnd_recvpub() {
 											echo "xfwu---`date`---cmd30 to start compare  pr.pdf---$xfwuMD5----$doc_md5---" >> /tmp/iot/$device_name.txt
                                             echo "xfwu--------$xfwuMD5-------$doc_md5" > /dev/console
                                             if [ "$xfwuMD5" = "$doc_md5" ]; then
+														report_prstatus "$seqno" "$print_id"
 														echo "xfwu---`date`---CMD:$cmd to print pr.pdf finished----" >> /tmp/iot/$device_name.txt
                                                         echo "xfwu------------print pr.pdf" > /dev/console
                                                         lp /tmp/iot/pr.pdf &
                                                         sleep 1
-                                                        report_prstatus "$seqno" "$print_id"
+                                                        
                                                         break
+											else
+														echo "xfwu---`date`---CMD:$cmd download failed retry---xfwuVar:$xfwuVar----" >> /tmp/iot/$device_name.txt
+                                                        echo "xfwu-------xfwuVar:$xfwuVar-----download failed retry" > /dev/console
                                             fi
                                          fi
-                                   #done
+					let xfwuVar=$xfwuVar+1
+					
+										 
+                                   done
                                 #done
                              fi
                           else

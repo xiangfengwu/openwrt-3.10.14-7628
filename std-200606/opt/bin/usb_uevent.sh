@@ -6,8 +6,8 @@ ACTION="$1"
 
 YJIMEI=`hexdump /dev/mtd3 -C -s 1024 -n 16 |head -1 |awk  -F "|" '{print $2}' |tr -d "."` 
 
-productKey="a1Y72Hurhna"
-device_name=${YJIMEI}
+#productKey="a1Y72Hurhna"
+#device_name=${YJIMEI}
 
 report_prname() {
 	local topic="/${productKey}/${device_name}/user/auth"
@@ -35,11 +35,11 @@ case $ACTION in
 	add)
 		echo "xfwu---`date`---usb connect----" >> /tmp/iot/$YJIMEI.txt
 		#get printer
-		echo 1 > /tmp/state/xfwuPrinterledstate
+		gpio l 2 4000 0 0 0 0 > /dev/null
 		printername=`get_prname`
 		printeruri=`get_pruri`
 		if [ -n "$printername" ]; then
-			echo "xfwu--------ppppppppppppppppppppppppppp" > /dev/console
+			#echo "xfwu--------ppppppppppppppppppppppppppp" > /dev/console
 			echo "xfwu---`date`---report prname:${printername}----" >> /tmp/iot/$YJIMEI.txt
 			report_prname "$printername"
 			lpadmin -p ${printername} -E -m raw -v ${printeruri}
@@ -51,9 +51,9 @@ case $ACTION in
 	remove)
 		echo "`date` Printer removed" >> /tmp/usbevent.dbg
 		echo "xfwu---`date`---usb removed----" >> /tmp/iot/$YJIMEI.txt
-		echo "xfwu--------qqqqqqqqqqqqqqqqqqqqqqqqqqqqqq" > /dev/console
+		#echo "xfwu--------qqqqqqqqqqqqqqqqqqqqqqqqqqqqqq" > /dev/console
 		#get printer
-		echo 3 > /tmp/state/xfwuPrinterledstate
+		gpio l 2 0 0 5 0 4000 > /dev/null
 		echo "xfwu---`date`---report prname $printername----" >> /tmp/iot/$YJIMEI.txt
 		printername="none"
 		report_prname "$printername"

@@ -1,5 +1,12 @@
 #!/bin/sh
 
+YJIMEI=`hexdump /dev/mtd3 -C -s 1024 -n 16 |head -1 |awk  -F "|" '{print $2}' |tr -d "."`
+
+#productKey="g1mumCzFX3Z"
+productKey="g1muOMP4uiS"
+device_name=${YJIMEI}
+productUrl="iot-cn-oew1vzsj40v.mqtt.iothub.aliyuncs.com"
+
 mydebug() {  #bytian
 	echo "$1" >> /tmp/iot/iotrcv.dbg
 	#echo $1

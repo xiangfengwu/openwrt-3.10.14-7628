@@ -14,9 +14,8 @@ do
         LENX=$(cat /tmp/state/xfwuWifistate)
 	YJSECRET=$(cat /opt/bin/xfwusecret|sed 's/"//g')	
         if [ "$LENX" != "4" ]; then
-            
 	    if [ "$pnum" = "1" ]; then
-                echo 1 > /tmp/state/xfwuNetledstate
+                gpio l 1 4000 0 0 0 0 > /dev/null
                 pnum=0
                 npnum=1
 				echo "xfwu---`date`---enjoy shopping internet----" >> /tmp/iot/$YJIMEI.txt
@@ -27,19 +26,21 @@ do
                        # rm /opt/bin/xfwusecret
                         #curl --connect-timeout 3 --max-time 3 --retry 5 -G http://192.168.0.200:8081/v3/common/sec2?itg=${YJIMEI} -o /opt/bin/xfwusecret
                       if [ "$YJSECRET" = "" ]; then 
-					  echo "xfwu---`date`---GET THE YJSECRET:$YJSECRET----by YJIMEI:$YJIMEI-------" >> /tmp/iot/$YJIMEI.txt
-			curl --connect-timeout 3 --max-time 3 --retry 5 -k -G https://www.tuyaji.com.cn/cloudprintv2-wxapplet-box/v3/common/sec2?itg=${YJIMEI} -o /opt/bin/xfwusecret
+					  #curl --connect-timeout 3 --max-time 3 --retry 5 -G http://192.168.0.200:8081/v3/common/sec3?itg=${YJIMEI} -o /opt/bin/xfwusecret
+			#curl --connect-timeout 3 --max-time 3 --retry 5 -k -G https://www.tuyaji.com.cn/cloudprintv2-wxapplet-box/v3/common/sec2?itg=${YJIMEI} -o /opt/bin/xfwusecret
+			curl --connect-timeout 3 --max-time 3 --retry 5 -k -G https://www.tuyaji.com.cn/cloudprintv2-wxapplet-box/v3/common/sec3?itg=${YJIMEI} -o /opt/bin/xfwusecret
 			#knum2=0
-                        echo "xfwu-----YJSECRET:$YJSECRET" > /dev/console
-                        echo "xfwu-----YJIMEI:$YJIMEI" > /dev/console
+                        #echo "xfwu-----YJSECRET:$YJSECRET" > /dev/console
+                        #echo "xfwu-----YJIMEI:$YJIMEI" > /dev/console
+						echo "xfwu---`date`---GET THE YJSECRET:$YJSECRET----by YJIMEI:$YJIMEI-------" >> /tmp/iot/$YJIMEI.txt
 			sleep 3
 		      fi
                 fi
             fi				
 	else
-                echo "xfwu------no internet connect" > /dev/console
+                #echo "xfwu------no internet connect" > /dev/console
                 if [ "$npnum" = "1" ]; then
-                        echo 3 > /tmp/state/xfwuNetledstate
+                        gpio l 1 0 0 5 0 4000 > /dev/null
                         npnum=0
                         pnum=1
 						echo "xfwu---`date`---NO shopping internet----" >> /tmp/iot/$YJIMEI.txt

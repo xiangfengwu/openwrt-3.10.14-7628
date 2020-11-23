@@ -7,8 +7,8 @@ action="$1"
 
 YJIMEI=`hexdump /dev/mtd3 -C -s 1024 -n 16 |head -1 |awk  -F "|" '{print $2}' |tr -d "."`
 
-productKey="a1Y72Hurhna"
-device_name=${YJIMEI}
+#productKey="a1Y72Hurhna"
+#device_name=${YJIMEI}
 
 FirmwareVersion=`cat /etc/openwrt_release | grep DISTRIB_REVISION |awk -F '"' '{print $2}' | awk -F '-' '{print $2}'`
 
@@ -124,6 +124,15 @@ hnd_recvpub() {
 
 	cmd=`/opt/bin/cjson -f "$payloadfile" -r "cmd"`
 	echo "xfwu---`date`---111111111111-----hnd_recvpub----CMD:$cmd----" >> /tmp/iot/$device_name.txt 
+
+	xfwuPrintId=`cat /tmp/iot/yjprintid`
+	print_id=`/opt/bin/cjson -f "$payloadfile" -r "data:print_id"` 
+	seqno=`/opt/bin/cjson -f "$payloadfile" -r "seqno"`
+	 if [ "$cmd" == "30" ]; then
+	 #echo "xfwu-------aaaaaaaaaaaaaaaaaaaaaa" > /dev/console
+	 report_prtask "$seqno" "$print_id" 
+	 fi
+
 	case $cmd in
 		10)  #print_auth
 			echo "xfwu---`date`---receiver CMD:$cmd-------------" >> /tmp/iot/$device_name.txt
@@ -132,7 +141,7 @@ hnd_recvpub() {
 			firmware_md5=`/opt/bin/cjson -f "$payloadfile" -r "data:md5"`
 			firmware_url=`/opt/bin/cjson -f "$payloadfile" -r "data:apk_url"`
 			
-			echo "xfwu----------$firmware_md5---------------$firmware_url------" > /dev/console
+			#echo "xfwu----------$firmware_md5---------------$firmware_url------" > /dev/console
 			
 			   if [ "$firmware_url" != "" ]; then
 						echo "xfwu---`date`---receiver cmd:$cmd to start download fimrware:$firmware_url -------------" >> /tmp/iot/$device_name.txt
@@ -142,8 +151,9 @@ hnd_recvpub() {
 							xfwuFIRMMD5=`md5sum /tmp/iot/YJ_MTK.bin |awk -F ' ' '{print $1}'`
 							echo "xfwu--------$xfwuFIRMMD5-------$firmware_md5" > /dev/console
 							if [ "$xfwuFIRMMD5" = "$firmware_md5" ]; then
-								echo "xfwu----6666666666-------start update" > /dev/console
+								#echo "xfwu----6666666666-------start update" > /dev/console
 								echo "xfwu---`date`---receiver CMD:$cmd--update fimrware -------------" >> /tmp/iot/$device_name.txt
+								rm -rf /opt/bin/xfwusecret
 								sysupgrade /tmp/iot/YJ_MTK.bin
 								#sleep 1
 								#report_prstatus "$seqno" "$print_id"
@@ -154,12 +164,12 @@ hnd_recvpub() {
 			     fi
 			;;
 		30)  #print task
-			xfwuPrintId=`cat /tmp/iot/yjprintid`
+			#xfwuPrintId=`cat /tmp/iot/yjprintid`
 
-			print_id=`/opt/bin/cjson -f "$payloadfile" -r "data:print_id"`
-			seqno=`/opt/bin/cjson -f "$payloadfile" -r "seqno"`
-			report_prtask "$seqno" "$print_id"
-			echo "xfwu-------$xfwuPrintId-----333333333333-------$print_id" > /dev/console
+			#print_id=`/opt/bin/cjson -f "$payloadfile" -r "data:print_id"`
+			#seqno=`/opt/bin/cjson -f "$payloadfile" -r "seqno"`
+			#report_prtask "$seqno" "$print_id"
+			#echo "xfwu-------$xfwuPrintId-----333333333333-------$print_id" > /dev/console
 			echo "xfwu---`date`---receiver cmd30 -------------" >> /tmp/iot/$device_name.txt 
 			if [ "$xfwuPrintId" != "$print_id" ]; then
 			   doc_url=`/opt/bin/cjson -f "$payloadfile" -r "data:doc_url"`
@@ -185,24 +195,24 @@ hnd_recvpub() {
                                    #do
 										 echo "xfwu---`date`---cmd30 to start download pr.pdf-doc_url:$doc_url---" >> /tmp/iot/$device_name.txt
                                         curl  -o /tmp/iot/pr.pdf "$doc_url"
-                                        echo "xfwu----------$xfwuVar" > /dev/console
+                                        #echo "xfwu----------$xfwuVar" > /dev/console
                                         #curl --silent --max-time 3 -o /tmp/iot/pr.pdf "$doc_url"
                                         #wget -c  "$doc_url"  -O /tmp/iot/pr.pdf
                                         if [ -f /tmp/iot/pr.pdf ]; then
                                             xfwuMD5=`md5sum /tmp/iot/pr.pdf |awk -F ' ' '{print $1}'`
 											echo "xfwu---`date`---cmd30 to start compare  pr.pdf---$xfwuMD5----$doc_md5---" >> /tmp/iot/$device_name.txt
-                                            echo "xfwu--------$xfwuMD5-------$doc_md5" > /dev/console
+                                            #echo "xfwu--------$xfwuMD5-------$doc_md5" > /dev/console
                                             if [ "$xfwuMD5" = "$doc_md5" ]; then
 														report_prstatus "$seqno" "$print_id"
 														echo "xfwu---`date`---CMD:$cmd to print pr.pdf finished----" >> /tmp/iot/$device_name.txt
-                                                        echo "xfwu------------print pr.pdf" > /dev/console
+                                                        #echo "xfwu------------print pr.pdf" > /dev/console
                                                         lp /tmp/iot/pr.pdf &
                                                         sleep 1
                                                         
                                                         break
 											else
 														echo "xfwu---`date`---CMD:$cmd download failed retry---xfwuVar:$xfwuVar----" >> /tmp/iot/$device_name.txt
-                                                        echo "xfwu-------xfwuVar:$xfwuVar-----download failed retry" > /dev/console
+                                                        #echo "xfwu-------xfwuVar:$xfwuVar-----download failed retry" > /dev/console
                                             fi
                                          fi
 					let xfwuVar=$xfwuVar+1
@@ -216,7 +226,7 @@ hnd_recvpub() {
                                 echo "xfwu--------22222222222222------temp printid" > /dev/console
                           fi
                         ;;
-                91)  #reboot
+        91)  #reboot
 				echo "xfwu---`date`---cmd91 TO reboot robot----" >> /tmp/iot/$device_name.txt
                         seqno=`/opt/bin/cjson -f "$payloadfile" -r "seqno"`
                         report_reboot "$seqno"
@@ -243,7 +253,7 @@ case $action in
 		sleep 1
         printWifi=$(iwconfig apcli0|grep ESSID | awk -F ':' '{print $2}')
 		echo "xfwu---`date`---report printwifiname:$printWifi-------" >> /tmp/iot/$device_name.txt
-        echo "xfwu-----------printWifi:$printWifi" > /dev/console
+        #echo "xfwu-----------printWifi:$printWifi" > /dev/console
         report_prwifi "$printWifi"
 		#get printer
 		#printername=`uci -q get aliyun.iot.printername`

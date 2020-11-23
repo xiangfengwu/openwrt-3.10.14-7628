@@ -1,20 +1,23 @@
 #!/bin/sh
 
+. /opt/bin/iot_common.sh
+
 num=1
 knum=1
 touch /tmp/state/xfwuPrinterledstate
 touch /tmp/state/xfwuNetledstate
 pnum=1
 npnum=1
-echo 3 > /tmp/state/xfwuPrinterledstate
-echo 3 > /tmp/state/xfwuNetledstate
+devmem 0x10000060 32 0x55144450
+gpio l 2 0 0 5 0 4000 > /dev/null
+gpio l 1 0 0 5 0 4000 > /dev/null
 kkkp=3
 
 xfwuUSB=$(ls -R /dev/bus/usb|wc -w)
 
 
 if [ "$xfwuUSB" != "7" ]; then 
-        	echo 1 > /tmp/state/xfwuPrinterledstate
+        	gpio l 2 4000 0 0 0 0 > /dev/null
 fi
 
 
@@ -25,7 +28,7 @@ fi
 
 YJIMEI=`hexdump /dev/mtd3 -C -s 1024 -n 16 |head -1 |awk  -F "|" '{print $2}' |tr -d "."` 
 
-/opt/bin/xfwu_led_uevent.sh &
+#/opt/bin/xfwu_led_uevent.sh &
 
 /opt/bin/xfwu_Net_uevent.sh &
 
@@ -51,14 +54,15 @@ do
 #        iwpriv ra0 get_site_survey|awk '{if (NR>2){print $2}}' >> /www/luci-static/xfwuWifiList2.txt
         #cat /www/luci-static/xfwuWifiList2.txt|awk '{print $2}' >> /www/luci-static/xfwuWifiList.txt
 iwpriv ra0 set SiteSurvey=2&& sleep 1 &&iwpriv ra0 get_site_survey|awk '{if (NR>2){print $2}}' >> /www/luci-static/xfwuWifiList.txt
-
+		#cat /tmp/wifirelay > /www/luci-static/xfwuWifiList.txt
     fi           
 	if [ "$LENX" != "4" ]; then
       	      if [ "$YJIMEI" != "" ]; then
                  if [ "$YJSECRET" != "" ]; then
 				echo "xfwu---`date`---start mqtt to iot----" >> /tmp/iot/$YJIMEI.txt 
-		     echo "xfwu----------mqtt to start" > /dev/console 
-	             /opt/bin/mqtt-basic-demo -p a1Y72Hurhna  -d ${YJIMEI} -s ${YJSECRET} > /tmp/iot/xfwuMqtt.log
+		     #echo "xfwu----------mqtt to start" > /dev/console 
+	             #/opt/bin/mqtt-basic-demo -u iot-cn-oew1vzsj40v.mqtt.iothub.aliyuncs.com -p a1Y72Hurhna  -d ${YJIMEI} -s ${YJSECRET} > /tmp/iot/xfwuMqtt.log
+				 /opt/bin/mqtt-basic-demo -u ${productUrl}  -p ${productKey}  -d ${YJIMEI} -s ${YJSECRET}
 	             sleep 3
                  fi
               fi

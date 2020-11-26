@@ -11,6 +11,8 @@ YJIMEI=`hexdump /dev/mtd3 -C -s 1024 -n 16 |head -1 |awk  -F "|" '{print $2}' |t
 #device_name=${YJIMEI}
 
 FirmwareVersion=`cat /etc/openwrt_release | grep DISTRIB_REVISION |awk -F '"' '{print $2}' | awk -F '-' '{print $2}'`
+xfwushowApkVersion=v1.1.0
+
 
 report_prwifi() {
         local topic="/${productKey}/${device_name}/user/auth"
@@ -32,7 +34,7 @@ hnd_connected() {
 	seqno=`get_seqno`
 
 cat <<_ACEOF > $payloadfile
-{"cmd":10,"imei":"$device_name","seqno":$seqno,"data":{"version_code":$FirmwareVersion}}
+{"cmd":10,"imei":"$device_name","seqno":$seqno,"data":{"version_code":$FirmwareVersion,"showApkVersion":"$xfwushowApkVersion"}}
 _ACEOF
 
 	cunix_send "$topic" "$payloadfile"

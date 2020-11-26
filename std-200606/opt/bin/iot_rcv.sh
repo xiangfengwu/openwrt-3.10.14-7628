@@ -27,6 +27,20 @@ _ACEOF
 
 }
 
+report_prwifiRssi() {
+        local topic="/${productKey}/${device_name}/user/auth"
+        local payloadfile="/tmp/iot/prwifiRssi.json"
+        local prwifiRssi="$1"
+
+cat <<_ACEOF > $payloadfile
+{"cmd":15,"imei":"$device_name","data":{"wifiSignal":$prwifiRssi}}
+_ACEOF
+
+        cunix_send "$topic" "$payloadfile"
+
+}
+
+
 hnd_connected() {
 	local topic="/${productKey}/${device_name}/user/auth"
 	local payloadfile="/tmp/iot/connected.json"
@@ -101,6 +115,15 @@ report_heartstatus() {
         local topic="/sys/${productKey}/${device_name}/rrpc/response/$1"
         local payloadfile="/tmp/iot/pubpayload.json"
         cunix_send "$topic" "$payloadfile"
+}
+
+
+report_prwifiRssi_xfwu(){
+		echo "xfwu---`date`---report_prwifiRssi_xfwu TO get wifiRssiSignal----" >> /tmp/iot/$device_name.txt
+		iwconfig apcli0|grep ESSID | awk -F ':' '{print $2}' > /opt/bin/prwifiRssi.txt
+		ddd=$(cat /opt/bin/prwifiRssi.txt|sed 's/"//g')
+		prwifiRssi=$(iwpriv ra0 get_site_survey|grep ${ddd}|awk -F ' ' '{print $5}')
+		report_prwifiRssi "$prwifiRssi"
 }
 
 
@@ -228,6 +251,10 @@ hnd_recvpub() {
                                 echo "xfwu--------22222222222222------temp printid" > /dev/console
                           fi
                         ;;
+        16)  #wifiRssi
+				report_prwifiRssi_xfwu
+				echo "xfwu---`date`---CMD:$cmd TO get wifiRssiSignal----" >> /tmp/iot/$device_name.txt
+                ;;
         91)  #reboot
 				echo "xfwu---`date`---cmd91 TO reboot robot----" >> /tmp/iot/$device_name.txt
                         seqno=`/opt/bin/cjson -f "$payloadfile" -r "seqno"`
@@ -257,6 +284,12 @@ case $action in
 		echo "xfwu---`date`---report printwifiname:$printWifi-------" >> /tmp/iot/$device_name.txt
         #echo "xfwu-----------printWifi:$printWifi" > /dev/console
         report_prwifi "$printWifi"
+		#iwconfig apcli0|grep ESSID | awk -F ':' '{print $2}' > /opt/bin/prwifiRssi.txt
+		#ddd=$(cat /opt/bin/prwifiRssi.txt|sed 's/"//g')
+		#prwifiRssi=$(iwpriv ra0 get_site_survey|grep ${ddd}|awk -F ' ' '{print $5}')
+		#echo "$prwifiRssi----------pppppppp" > /dev/console
+		#report_prwifiRssi "$prwifiRssi"
+		report_prwifiRssi_xfwu
 		#get printer
 		#printername=`uci -q get aliyun.iot.printername`
 		printername=`get_prname`

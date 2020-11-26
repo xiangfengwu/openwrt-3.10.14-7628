@@ -23,20 +23,22 @@ You may obtain a copy of the License at
 			<br />
 			<% end -%>
 		</div>
-		<fieldset class="cbi-section"><fieldset class="cbi-section-node">
-			<div class="cbi-value">
-				<label class="cbi-value-title"><%:Username%></label>
-				<div class="cbi-value-field">
-					<input class="cbi-input-user" type="text" name="username" value="<%=duser%>" />
+		<fieldset class="cbi-section">
+			<fieldset class="cbi-section-node">
+				<div class="cbi-value">
+					<label class="cbi-value-title"><%:Username%></label>
+					<div class="cbi-value-field">
+						<input class="cbi-input-user" type="text" name="username" value="<%=duser%>" />
+					</div>
 				</div>
-			</div>
-			<div class="cbi-value cbi-value-last">
-				<label class="cbi-value-title"><%:Password%></label>
-				<div class="cbi-value-field">
-					<input id="focus_password" class="cbi-input-password" type="password" name="password" value="admin" />
+				<div class="cbi-value cbi-value-last">
+					<label class="cbi-value-title"><%:Password%></label>
+					<div class="cbi-value-field">
+						<input id="focus_password" class="cbi-input-password" type="password" name="password" value="admin" />
+					</div>
 				</div>
-			</div>
-		</fieldset></fieldset>
+			</fieldset>
+		</fieldset>
 	</div>
 
 	<div>
@@ -68,11 +70,11 @@ if https_port and fs.access(https_key) then
 <script type="text/javascript">//<![CDATA[
 	if (document.location.protocol != 'https:') {
 		var url = 'https://' + window.location.hostname + ':' + '<%=https_port%>' + window.location.pathname;
-		var img=new Image;
-		img.onload=function(){window.location = url};
-		img.src='https://' + window.location.hostname + ':' + '<%=https_port%>' + '<%=resource%>/cbi/up.gif?' + Math.random();;
-		setTimeout(function(){
-			img.src=''
+		var img = new Image;
+		img.onload = function () { window.location = url };
+		img.src = 'https://' + window.location.hostname + ':' + '<%=https_port%>' + '<%=resource%>/cbi/up.gif?' + Math.random();;
+		setTimeout(function () {
+			img.src = ''
 		}, 5000);
 	}
 //]]></script>

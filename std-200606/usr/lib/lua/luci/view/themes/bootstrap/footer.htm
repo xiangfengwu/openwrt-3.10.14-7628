@@ -24,20 +24,20 @@ You may obtain a copy of the License at
 %>
 </div>
 <div id="newDiv">
-    <div class="img-box" id="img-box">
-        <img src="http://192.168.11.123/luci-static/bg.png" alt="">
+    <div class="img-box">
+        <img src="/luci-static/bg.png">
     </div>
     <div class="form-wifi" id="form-wifi">
         <div class="form-row" id="ssid-row">
             <div class="title">WiFi名称</div>
             <div class="input" id="ssid-wrap">
                 <div class="box">
-                    <input type="text" class="input-ssid" placeholder="请输入WiFi名称" id="input-ssid" autocapitalize="off"
-                        style="ime-mode: disabled;" />
+                    <input id="input-ssid" class="input-ssid" type="text" placeholder="请输入WiFi名称" autocapitalize="off" style="ime-mode: disabled;" />
                     <span class="warn-msg hide" id="ssid-warn-msg">请输入或选择WiFi名称</span>
                     <span class="icon-input" id='select-wrap'>
+                        <div class="separator"></div>
                         <span>请选择</span>
-                        <img src="/luci-static/down.png" alt="" width="18" height="18" id="img-arrow">
+                        <img src="/luci-static/down.png" width="18" height="18" id="img-arrow">
                     </span>
                     <div class="wifi-list hide" id="wifi-list"> </div>
                 </div>
@@ -45,23 +45,21 @@ You may obtain a copy of the License at
         </div>
         <div>
             <div class="warn-wrap">
-                <img src="/luci-static/warn.png" width="12" height="12">
+                <img src="/luci-static/warn2.png" width="12" height="12">
                 <div>若选择列表中找不到所要连接的WiFi，请手动输入WiFi名称</div>
             </div>
             <div class="warn-wrap">
-                <img src="/luci-static/warn.png" width="12" height="12">
+                <img src="/luci-static/warn2.png" width="12" height="12">
                 <div>请确认键盘为英文输入法</div>
             </div>
         </div>
         <div class="form-row" id="pass-row">
             <div class="title">WiFi密码</div>
             <div class="input" id="pass-wrap">
-                <input type="text" placeholder="请输入WiFi密码" class="input-pass" id="input-pass" autocapitalize="off"
-                    style="ime-mode: disabled;">
+                <input id="input-pass" class="input-pass" type="text" placeholder="请输入WiFi密码" autocapitalize="off" style="ime-mode: disabled;">
                 <span class="warn-msg hide" id="pass-warn-msg">请输入WiFi密码</span>
             </div>
         </div>
-
         <div class="form-action">
             <div class="btn" id="btn-connect">连接</div>
         </div>
@@ -73,22 +71,19 @@ You may obtain a copy of the License at
             <div class="right"></div>
         </div>
         <div class="section">
-            1、若WiFi列表中未发现所要连接的WiFi，请手动输入WiFi名称；
+            1、若配网失败（请核对WiFi名称或密码），退出并再次连接盒子热点进入该页面，重新配网；
         </div>
         <div class="section">
-            2、若配网失败（请核对WiFi名称或密码），退出并再次连接盒子热点进入该页面，重新配网；
+            2、配网完成（网络指示灯常亮），将自动退出该页面（若长时间无反应，可手动关闭）;
         </div>
         <div class="section">
-            3、配网完成（网络指示灯常亮），将自动退出该页面（若长时间无反应，可手动关闭）；
+            3、小程序或APP显示设备在线，表示已配网成功；
         </div>
         <div class="section">
-            4、小程序或APP显示设备在线，表示已配网成功；
-        </div>
-        <div class="section">
-            5、配网成功后，请在手机设置里忽略/移除此盒子热点，以免影响手机连接正常WiFi上网。
+            4、配网成功后，请在手机设置里忽略/移除此盒子热点，以免影响手机连接正常WiFi上网。
         </div>
     </div>
-    <div class="modal " id="modal-tips2" style="display: none;">
+    <div class="modal" id="modal-tips2" style="display: none;">
         <div class="body">
             <div class="header">
                 <div id="box-loading"></div>
@@ -103,7 +98,7 @@ You may obtain a copy of the License at
             </div>
         </div>
     </div>
-    <div class="modal " id="modal-tips3" style="display: none;">
+    <div class="modal" id="modal-tips3" style="display: none;">
         <div class="body2">
             <div class="header2"> 请确定配网是否成功？ </div>
             <div class="content2">
@@ -121,6 +116,7 @@ You may obtain a copy of the License at
         overflow-x: hidden;
     }
 
+    input,
     div {
         box-sizing: border-box;
     }
@@ -134,30 +130,24 @@ You may obtain a copy of the License at
 
     .img-box img {
         width: 100%;
+        display: block;
     }
 
     .form-wifi {
         width: 100%;
-        padding: 0 20px 0 20px;
-    }
-
-    .form-title {
-        font-size: 18px;
-        font-weight: 500;
-        color: #222222;
-        line-height: 32px;
+        padding: 0 0.14rem;
     }
 
     .form-row {
+        height: 0.6rem;
         display: flex;
         flex-direction: row;
         align-items: center;
-        height: 60px;
     }
 
     .form-wifi .title {
-        width: 90px;
-        font-size: 14px;
+        width: 0.8rem;
+        font-size: 0.14rem;
         font-weight: 400;
         color: #222222;
     }
@@ -168,42 +158,44 @@ You may obtain a copy of the License at
 
     .form-wifi .input input {
         width: 100%;
-        height: 36px;
-        border-radius: 8px;
-        border: 1px solid #F0F0F0;
-        padding-left: 18px;
+        height: 0.36rem;
+        border-radius: 0.1rem;
+        border: 0.01rem solid #F0F0F0;
+        padding-left: 0.08rem;
         color: #000 !important;
         box-shadow: none;
         -webkit-appearance: none;
         -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+        caret-color: #2ED7AE;
     }
 
     .form-wifi input::-webkit-input-placeholder {
-        font-size: 14px;
+        font-size: 0.14rem;
         font-weight: 400;
         color: #BDBDBD;
     }
 
     .form-wifi input:focus {
-        border: 1px solid #2ED7AE;
+        border: 0.01rem solid #2ED7AE;
     }
 
     .form-action {
-        display: flex;
         width: 100%;
+        margin-top: 0.3rem;
+        display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        margin-top: 30px;
     }
 
     .form-action .btn {
         background: #2ED7AE;
         color: #FFFFFF;
         width: 100%;
-        height: 36px;
-        border-radius: 18px;
-        font-size: 14px;
+        max-width: 3.43rem;
+        height: 0.36rem;
+        border-radius: 0.18rem;
+        font-size: 0.14rem;
         font-weight: 400;
         display: flex;
         flex-direction: row;
@@ -218,8 +210,8 @@ You may obtain a copy of the License at
     }
 
     .box .icon-input {
-        width: 80px;
-        height: 34px;
+        width: 0.86rem;
+        height: 0.36rem;
         position: absolute;
         top: 0px;
         right: 0px;
@@ -227,8 +219,19 @@ You may obtain a copy of the License at
         flex-direction: row;
         align-items: center;
         justify-content: center;
-        border-left: 1px solid #F0F0F0;
         color: #999;
+        font-size: 0.14rem;
+    }
+
+    .separator {
+        width: 0.01rem;
+        height: 0.2rem;
+        background: #F0F0F0;
+        margin-right: 0.12rem;
+    }
+
+    .icon-input img {
+        margin-left: 0.04rem;
     }
 
     .box .input-ssid {
@@ -238,14 +241,14 @@ You may obtain a copy of the License at
 
     .wifi-list {
         position: absolute;
-        top: 42px;
+        top: 0.44rem;
         background: #fff;
         width: 100%;
-        max-height: 250px;
+        max-height: 2.5rem;
         overflow: scroll;
-        border-radius: 6px;
-        padding-left: 20px;
-        padding-right: 20px;
+        border-radius: 0.06rem;
+        padding-left: 0.2rem;
+        padding-right: 0.2rem;
         box-shadow: 0px 0px 6px rgba(0, 0, 0, 0.2);
         z-index: 100;
     }
@@ -255,9 +258,9 @@ You may obtain a copy of the License at
     }
 
     .wifi-item {
-        height: 50px;
-        line-height: 50px;
-        font-size: 14px;
+        height: 0.5rem;
+        line-height: 0.5rem;
+        font-size: 0.14rem;
         color: #222;
         display: flex;
         position: relative;
@@ -283,10 +286,10 @@ You may obtain a copy of the License at
 
     .btn-update {
         position: fixed;
-        bottom: 10px;
-        left: 10px;
-        height: 50px;
-        width: 50px;
+        bottom: 0.1rem;
+        left: 0.1rem;
+        height: 0.5rem;
+        width: 0.5rem;
         background: #fff;
         opacity: 0;
     }
@@ -303,12 +306,13 @@ You may obtain a copy of the License at
         height: 100vh;
         position: fixed;
         top: 0;
-        background-color: rgba(153, 153, 153, 0.8);
+        background: rgba(0, 0, 0, 0.5);
     }
 
     .modal .body {
-        width: 300px;
+        width: 3.07rem;
         padding: 30px 20px;
+        max-width: 90%;
         position: absolute;
         top: 50%;
         left: 50%;
@@ -318,12 +322,12 @@ You may obtain a copy of the License at
         align-items: center;
         justify-content: center;
         background-color: #fff;
-        border-radius: 20px;
+        border-radius: 0.1rem;
         color: #222;
     }
 
     .modal .header {
-        height: 100px;
+        height: 1.46rem;
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -331,7 +335,7 @@ You may obtain a copy of the License at
     }
 
     .modal .top-border {
-        width: 80%;
+        width: 90%;
         height: 1px;
         background: #f0f0f0;
         margin: 0 auto;
@@ -340,9 +344,10 @@ You may obtain a copy of the License at
 
     .modal .msg2 {
         text-align: left;
-        line-height: 20px;
-        font-size: 12px;
+        font-size: 0.13rem;
+        line-height: 0.2rem;
         font-weight: 400;
+        color: #4C4C4C;
     }
 
     .msg2 span {
@@ -350,7 +355,7 @@ You may obtain a copy of the License at
     }
 
     .modal .body2 {
-        width: 300px;
+        width: 3.07rem;
         position: absolute;
         top: 50%;
         left: 50%;
@@ -371,7 +376,7 @@ You may obtain a copy of the License at
         background: #f0fffb;
         border-radius: 10px 10px 0px 0px;
         text-align: center;
-        background-image: url("./luci-static/doubt.png");
+        background-image: url("/luci-static/doubt.png");
         background-size: 30%;
         background-repeat: no-repeat;
         background-position: right bottom;
@@ -394,15 +399,15 @@ You may obtain a copy of the License at
     .modal .body2 #modal-btn2 {
         background: #2ED7AE;
         color: #fff;
-        width: 186px;
-        height: 40px;
-        border-radius: 40px;
+        width: 1.86rem;
+        height: 0.36rem;
+        border-radius: 0.18rem;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        font-size: 12px;
-        font-weight: 400px;
+        font-size: 0.14rem;
+        font-weight: 400;
         margin-top: 10px;
         margin-bottom: 30px;
     }
@@ -462,8 +467,16 @@ You may obtain a copy of the License at
         margin-bottom: 12px;
     }
 
+    .form-row.warn .separator {
+        background: #FF4343;
+    }
+
+    .form-row.warn .wifi-list {
+        top: 0.55rem;
+    }
+
     .input.warn input {
-        border: 1px solid red;
+        border: 0.01rem solid #FF4343;
         position: relative;
         top: 8px;
     }
@@ -473,32 +486,49 @@ You may obtain a copy of the License at
     }
 
     .warn-msg {
-        height: 8px;
-        color: red;
         position: relative;
-        top: 16px;
-        font-size: 14px;
+        height: 8px;
+        color: #FF4343;
+        top: 0.1rem;
+        font-size: 0.08rem;
         margin-bottom: 12px;
     }
 
     .warn-wrap {
-        margin-bottom: 10px;
         display: flex;
         flex-direction: row;
         align-items: center;
-        font-size: 10px;
-        font-weight: 400px;
+        margin-bottom: 0.12rem;
+        font-size: 0.12rem;
+        font-weight: 400;
         -webkit-text-size-adjust: none;
+        color: #FF7539;
     }
 
-    .warn-wrap span {
-        margin-left: 4px;
+    .warn-wrap div {
+        margin-left: 0.08rem;
     }
 
     #box-loading img {
-        width: 40px;
+        width: 0.4rem;
     }
 </style>
+
+<script>
+    (function (doc, win) {
+        var docEl = doc.documentElement,
+            resizeEvt = 'orientationchange' in window ? 'orientationchange' : 'resize',
+            recalc = function () {
+                var clientWidth = docEl.clientWidth;
+                if (!clientWidth) return;
+                docEl.style.fontSize = 100 * (clientWidth / 375) + 'px';
+            };
+
+        if (!doc.addEventListener) return;
+        win.addEventListener(resizeEvt, recalc, false);
+        doc.addEventListener('DOMContentLoaded', recalc, false);
+    })(document, window);
+</script>
 <script>
     var wifirelayEle = document.getElementById('cbi-wifirelay')
     if (wifirelayEle) {
@@ -599,7 +629,6 @@ You may obtain a copy of the License at
                 }
             }
         }
-
         var btnConnectEle = document.getElementById('btn-connect')
         btnConnectEle.addEventListener("click", function () {
             let flag = true
@@ -618,10 +647,6 @@ You may obtain a copy of the License at
             if (flag) {
                 oldSsidInputEle.value = ToCDB(ssidInputEle.value.trim())
                 oldPassEle.value = ToCDB(inputPassEle.value.trim())
-                // if (oldSsidInputEle.value.toLowerCase().indexOf('peripage') !== -1) {
-                //     alert('您输入的WiFi名称不正确，请输入正确的WiFi名称')
-                //     return;
-                // }
                 var event = new UIEvent('change');
                 oldSsidInputEle.dispatchEvent(event);
                 oldPassEle.dispatchEvent(event);

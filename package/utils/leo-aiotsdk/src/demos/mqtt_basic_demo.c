@@ -49,6 +49,8 @@
 #include "aiot_sysdep_api.h"
 #include "aiot_mqtt_api.h"
 
+#include "cJSON.h"
+
 
 /* 位于portfiles/aiot_port文件夹下的系统适配函数集合 */
 extern aiot_sysdep_portfile_t g_aiot_sysdep_portfile;
@@ -71,6 +73,119 @@ static uint8_t g_mqtt_recv_thread_running = 0;
 int epfd = -1;
 int connfd = -1;
 int listenfd = -1;
+
+// LRM
+#define CMD_30_PRINT_FLIE 30
+
+#define PRINT_STATUS_2_START 2
+#define PRINT_STATUS_3_DOWNLOAD_FAIL 3
+#define PRINT_STATUS_5_PRINTING 5
+#define PRINT_STATUS_6_FINISH 6
+#define PRINT_STATUS_7_ERROR 7
+#define PRINT_STATUS_8_PRINTED 8
+
+#define LOG_TO_FILE 1
+
+void *mqtt_handle = NULL;
+
+//char *topic_prefix; // topic的前缀是 /productKey/deviceName/
+char *topic_doc; 
+char* imei;
+
+typedef struct Cache {
+	int maxSize;
+	int *data;
+	int tail;
+} CACHE;
+CACHE *printId_caches;
+
+time_t t;
+struct tm *lt;
+void log_info(const char *format,...)
+{
+    va_list valist;
+    va_start(valist, format);
+ 
+	time(&t);
+	lt = localtime(&t);
+	
+#if LOG_TO_FILE
+	char log_path[50];
+	sprintf(log_path, "%s%s%s", "/tmp/iot/", imei,".txt" );
+	
+	FILE *fp;
+	fp = fopen(log_path, "a+");
+	
+	fprintf(fp,"%02d-%02d-%02d %02d:%02d:%02d INFO - ", lt->tm_year+1900, lt->tm_mon, lt->tm_mday, lt->tm_hour, lt->tm_min, lt->tm_sec);
+    vfprintf(fp, format, valist);
+	
+	fflush(fp);
+	fclose(fp);
+#else
+	printf("%02d-%02d-%02d %02d:%02d:%02d INFO - ", lt->tm_year+1900, lt->tm_mon, lt->tm_mday, lt->tm_hour, lt->tm_min, lt->tm_sec);
+	vprintf(format,valist);
+#endif
+
+    va_end(valist);
+}
+
+void log_warn(const char *format,...)
+{
+    va_list valist;
+    va_start(valist, format);
+ 
+	time(&t);
+	lt = localtime(&t);
+	
+#if LOG_TO_FILE
+	char log_path[50];
+	sprintf(log_path, "%s%s%s", "/tmp/iot/", imei,".txt" );
+	
+	FILE *fp;
+	fp = fopen(log_path, "a+");
+	
+	fprintf(fp,"%02d-%02d-%02d %02d:%02d:%02d WARN - ", lt->tm_year+1900, lt->tm_mon, lt->tm_mday, lt->tm_hour, lt->tm_min, lt->tm_sec);
+    vfprintf(fp, format, valist);
+	
+	fflush(fp);
+	fclose(fp);
+#else
+	printf("%02d-%02d-%02d %02d:%02d:%02d WARN - ", lt->tm_year+1900, lt->tm_mon, lt->tm_mday, lt->tm_hour, lt->tm_min, lt->tm_sec);
+	vprintf(format,valist);
+#endif
+
+    va_end(valist);
+}
+
+void log_error(const char *format,...)
+{
+    va_list valist;
+    va_start(valist, format);
+ 
+	time(&t);
+	lt = localtime(&t);
+	
+#if LOG_TO_FILE
+	char log_path[50];
+	sprintf(log_path, "%s%s%s", "/tmp/iot/", imei,".txt" );
+	
+	FILE *fp;
+	fp = fopen(log_path, "a+");
+	
+	fprintf(fp,"%02d-%02d-%02d %02d:%02d:%02d ERROR - ", lt->tm_year+1900, lt->tm_mon, lt->tm_mday, lt->tm_hour, lt->tm_min, lt->tm_sec);
+    vfprintf(fp, format, valist);
+	
+	fflush(fp);
+	fclose(fp);
+#else
+	printf("%02d-%02d-%02d %02d:%02d:%02d ERROR - ", lt->tm_year+1900, lt->tm_mon, lt->tm_mday, lt->tm_hour, lt->tm_min, lt->tm_sec);
+	vprintf(format,valist);
+#endif
+
+    va_end(valist);
+}
+
+// LRM
 
 static int execute(const char *cmd_line, int quiet)
 {
@@ -211,7 +326,7 @@ int read_sockdata(int sockfd, char *readbuf, int sizeofbuf, int *status)  //byti
 	int full = 1;
 	
 	if(!readbuf) {
-		fprintf(stderr, " read_sockdata ptr is empty ");
+		//fprintf(stderr, " read_sockdata ptr is empty ");
 		return 0;
 	}
 	else{ //if have any data incoming
@@ -219,25 +334,25 @@ int read_sockdata(int sockfd, char *readbuf, int sizeofbuf, int *status)  //byti
 		int sock_closed = 0;  //check socket have closed
 		char * pbuff = readbuf;
 		int left = sizeofbuf;
-		printf("read_sockdata(%d): begin: free dataspace to read:%d\n", sockfd, sizeofbuf);
+		//printf("read_sockdata(%d): begin: free dataspace to read:%d\n", sockfd, sizeofbuf);
 		while(left > 0 ) { //bytian; exit the loop: 1. left<=0(recv buf is full); 2. input buffer is empty
 			nread = read(sockfd, pbuff, left);  //API read();
 			if (nread < 0) {  //have errors, 分析处理不同的错误
 				if(errno == EINTR || errno == EAGAIN || errno == EWOULDBLOCK){ //errors: maybe input buffer is empty
 					//kernel socket input buffer is empty
-					fprintf(stderr, "read_sockdata(%d): warning: no more data! totalread:%d\n", sockfd, totalread);
+					//fprintf(stderr, "read_sockdata(%d): warning: no more data! totalread:%d\n", sockfd, totalread);
 					full = 0;
 					goto final;
 				}
 				else{  //have any other errors. close local socket 
- 					fprintf(stderr, "read_sockdata(%d): error: should close socket .\n", sockfd);
+ 					//fprintf(stderr, "read_sockdata(%d): error: should close socket .\n", sockfd);
 					sock_closed = 1;
 					goto freeresource;
 				}
 			}
 			else if( nread == 0){  //errors: maybe peer socket closed or have no data to read
 				if (errno != 0) {
-					fprintf(stderr, "read_sockdata(%d): error: peer closed!\n", sockfd);
+					//fprintf(stderr, "read_sockdata(%d): error: peer closed!\n", sockfd);
 					sock_closed = 1;
 					goto freeresource;
 				}
@@ -248,7 +363,7 @@ int read_sockdata(int sockfd, char *readbuf, int sizeofbuf, int *status)  //byti
 				
 			}
 			else {  //have no error
-				fprintf(stderr, "read_sockdata: read %s!\n", pbuff);
+				//fprintf(stderr, "read_sockdata: read %s!\n", pbuff);
 				pbuff += nread;
 				left -= nread;
 				totalread += nread;
@@ -390,7 +505,7 @@ int reply_mqtt_pub(void *handle, char *paramin)
 /* 日志回调函数, SDK的日志会从这里输出 */
 int32_t demo_state_logcb(int32_t code, char *message)
 {
-    printf("%s", message);
+    //printf("%s", message);
     return 0;
 }
 
@@ -430,33 +545,242 @@ void demo_mqtt_event_handler(void *handle, const aiot_mqtt_event_t *event, void 
     }
 }
 
+
+void * my_memcpy(void * dest, const void *src, size_t count)
+{
+	char *tmp = (char *)dest, *s = (char *)src;
+	while (count--)
+		*tmp++ = *s++;
+	return dest;
+}
+
+
+char* strrep(char *str, char *origin, char *replacement) {
+	// printf("str:%s\n", str);
+	// printf("origin:%s\n", origin);
+	// printf("replacement:%s\n", replacement);
+	char* index = strstr(str, origin);
+	if (index != NULL) {
+		uint8_t ori_len = strlen(origin);
+		uint8_t final_len = strlen(str) - strlen(origin) + strlen(replacement) + 1;
+
+		char *newstr = (char *)malloc(final_len);
+		memset(newstr, '\0', sizeof(newstr));
+
+		char *p = str;
+		char *q = newstr;
+		while (p < index) {
+			*q++ = *p++;
+		}
+		// replacement
+		p = replacement;
+		while (*p != '\0') {
+			*q++ = *p++;
+		}
+		// tail
+		p = index + ori_len;
+		while (*p != '\0') {
+			*q++ = *p++;
+		}
+		*q = '\0';
+		// printf(newstr);
+		return newstr;
+	}
+	return str;
+}
+
+char* substr(char* src,int len){
+	if(len<1)
+		return NULL;
+	int src_len = strlen(src);
+	if(src_len < len)
+		return NULL;
+	char* result = (char *)malloc(len + 1);
+	int i=0;
+	while(i<len){
+		*(result + i) = *(src + i);
+		i++;
+	}
+	*(result + i) = '\0';
+	return result;
+}
+
+CACHE* createCache() {
+	CACHE *cache = (CACHE *)malloc(sizeof(CACHE));
+	cache->maxSize = 3;
+	cache->tail = 0;
+	cache->data = (int *)malloc(cache->maxSize * sizeof(int));
+	int i = 0;
+	int *tmp = cache->data;
+	while (i < cache->maxSize) {
+		*tmp = 0;
+		tmp++; i++;
+	}
+	return cache;
+}
+
+void putCache(CACHE *cache, int data) {
+	if (cache == NULL) {
+		return;
+	}
+	*(cache->data + cache->tail) = data;
+	if (++cache->tail >= cache->maxSize) {
+		cache->tail = 0;
+	}
+}
+
+int getCache(CACHE *cache, int data) {
+	if (cache == NULL || cache->data == NULL) {
+		return 0;
+	}
+	int i = 0;
+	while (i < cache->maxSize) {
+		if (data == *(cache->data + i)) {
+			return data;
+		}
+		i++;
+	}
+	return 0;
+}
+
+void iot_replyPrintStatus(int print_id, int print_status, int seqno) {
+	char payload[300];
+	sprintf(payload, "%s%d%s%d%s%s%s%d%s", "{\"cmd\":31,\"data\":{\"no\":1,\"print_id\":", print_id, ", \"print_status\":", print_status, "},\"imei\":\"", imei, "\",\"seqno\":", seqno, "}");
+	//char *topic = strcat(topic_doc,"user/doc");
+	int res = aiot_mqtt_pub(mqtt_handle, topic_doc, (uint8_t *)payload, (uint32_t)strlen(payload), 0);
+	if (res < 0) {
+		log_info("Reply CMD31 failed, %s\n", payload);
+		return;
+	}
+	log_info( "CMD31 >>>>> %s\n", payload );
+}
+
+void iot_replyPrintFile(char *payload) {
+	//char *topic = strcat(topic_doc, "user/doc");
+	int res = aiot_mqtt_pub(mqtt_handle, topic_doc, (uint8_t *)payload, (uint32_t)strlen(payload), 0);
+	if (res < 0) {
+		log_info("Ack CMD30 failed, %s\n", payload);
+		return;
+	}
+	log_info( "CMD30 >>>>> %s\n", payload );
+}
+
+void iot_reply(char *topic, char *payload){
+	int res = aiot_mqtt_pub(mqtt_handle, topic, (uint8_t *)payload, (uint32_t)strlen(payload), 0);
+	if (res < 0) {
+		log_info("Reply IoT failed!\n");
+		//return -1;
+		return;
+	}
+	log_info( "Reply IoT >>>>> topic: %s, payload: %s\n", topic, payload );
+}
+
 /* MQTT默认消息处理回调, 当SDK从服务器收到MQTT消息时, 且无对应用户回调处理时被调用 */
 void demo_mqtt_default_recv_handler(void *handle, const aiot_mqtt_recv_t *packet, void *userdata)
 {
 	
-	time_t t;
-	struct tm *lt;
-	time(&t);
-	lt = localtime(&t);
+	//time_t t;
+	//struct tm *lt;
+	//time(&t);
+	//lt = localtime(&t);
 	//char *command = NULL;
     switch (packet->type) {
         case AIOT_MQTTRECV_HEARTBEAT_RESPONSE: {
-            printf("%d/%d/%d %d:%d:%d  heartbeat response\n",lt->tm_year+1900, lt->tm_mon, lt->tm_mday, lt->tm_hour, lt->tm_min, lt->tm_sec);
+            log_info("heartbeat response\n");
             /* TODO: 处理服务器对心跳的回应, 一般不处理 */
         }
         break;
 
         case AIOT_MQTTRECV_SUB_ACK: {
-            printf("suback, res: -0x%04X, packet id: %d, max qos: %d\n",
+            log_info("suback, res: -0x%04X, packet id: %d, max qos: %d\n",
                    -packet->data.sub_ack.res, packet->data.sub_ack.packet_id, packet->data.sub_ack.max_qos);
             /* TODO: 处理服务器对订阅请求的回应, 一般不处理 */
         }
         break;
 
         case AIOT_MQTTRECV_PUB: {
-            printf("pub, qos: %d, topic: %.*s\n", packet->data.pub.qos, packet->data.pub.topic_len, packet->data.pub.topic);
-            printf("pub, payload: %.*s\n", packet->data.pub.payload_len, packet->data.pub.payload);
+            log_info("Topic: <<<<<< %.*s\n", packet->data.pub.topic_len, packet->data.pub.topic);
+            log_info("Payload: <<<< %.*s\n", packet->data.pub.payload_len, packet->data.pub.payload);
             /* TODO: 处理服务器下发的业务报文 */
+			
+			char *pub_topic = substr( packet->data.pub.topic, packet->data.pub.topic_len );
+			char *pub_payload = substr( packet->data.pub.payload, packet->data.pub.payload_len );
+			
+			if( strstr(packet->data.pub.topic, "rrpc" )!=NULL){// 回复Rrpc
+				log_info("Received Rrpc request.\n");
+				char* _topic = strrep( pub_topic, "request", "response" );
+				iot_reply(_topic, pub_payload);
+				break;
+			}else if( strstr( pub_topic, "/user/push" ) != NULL ){
+				cJSON *payload_node = cJSON_Parse(pub_payload);
+				cJSON *cmd_node = cJSON_GetObjectItem(payload_node, "cmd");
+				int cmd = cmd_node->valueint;
+				cJSON *seqno_node = cJSON_GetObjectItem(payload_node, "seqno");
+				int seqno = seqno_node->valueint;
+					
+				if(cmd == CMD_30_PRINT_FLIE){
+					
+					cJSON *data_node = cJSON_GetObjectItem(payload_node, "data");
+					cJSON *printId_node = cJSON_GetObjectItem(data_node, "print_id");
+					int printId = printId_node->valueint;
+					cJSON *docUrl_node = cJSON_GetObjectItem(data_node, "doc_url");
+					char *doc_url = docUrl_node->valuestring;
+					
+					log_info("Received printing request, printId: %d\n", printId);
+					
+					// 收到30先回复
+					iot_replyPrintFile( pub_payload );
+					
+					// 判断是否已打印过
+					if(getCache(printId_caches,printId) != 0){// 已打印过的不再处理
+						// 回复8
+						log_info("printId[%d] already printed!\n",printId);
+						iot_replyPrintStatus(printId,PRINT_STATUS_8_PRINTED,seqno);
+						break;
+					}
+					putCache(printId_caches,printId);
+					
+					// 回复2
+					iot_replyPrintStatus(printId,PRINT_STATUS_2_START,seqno);
+					
+					char file_path[50];
+					sprintf(file_path, "%s%d", "/tmp/iot/", printId );
+					
+					// 下载
+					char download_cmd[300];
+					log_info("Downloading %s...\n", doc_url);
+					sprintf(download_cmd, "%s%s%s%s", "wget -t 3 -T 10 -O ", file_path, " ", doc_url );
+					log_info("%s\n",download_cmd);
+					system(download_cmd);
+					
+					if(access(file_path, F_OK) == -1){
+						// 文件不存在或无权限，下载失败，回复3
+						log_info("[%d]Download failed!\n", printId);
+						iot_replyPrintStatus(printId,PRINT_STATUS_3_DOWNLOAD_FAIL,seqno);
+						break;
+					}
+					log_info("Downloaded.\n");
+					
+					// 回复5
+					iot_replyPrintStatus(printId,PRINT_STATUS_5_PRINTING,seqno);
+					
+					// 打印
+					char print_cmd[100];
+					log_info("Sending print job...\n");
+					sprintf(print_cmd, "lp %s && rm %s",  file_path, file_path );
+					log_info("%s\n",print_cmd);
+					system(print_cmd);
+					log_info("Print job sent successfully and file deleted.\n");
+					
+					// 打印完成回复6
+					iot_replyPrintStatus(printId,PRINT_STATUS_6_FINISH,seqno);
+					break;
+				}
+				cJSON_Delete(payload_node);
+			}
+			
+			
+			
 			//bytian. call external shell script
 			//asprintf(&command, "%s %s %s", "/opt/bin/iot_rcv.sh", packet->data.pub.topic, packet->data.pub.payload);
 			write_filedata("/tmp/iot/pubtopic.json", packet->data.pub.topic, packet->data.pub.topic_len);
@@ -465,6 +789,21 @@ void demo_mqtt_default_recv_handler(void *handle, const aiot_mqtt_recv_t *packet
 				execute("/opt/bin/iot_rcv.sh recvpub /tmp/iot/pubtopic.json /tmp/iot/pubpayload.json", 0);
 				//free(command);
 			//}
+			
+
+			//char *pub_topic = "/sys/a2Wl5a1kUzm/8000000781612294/rrpc/request/+";
+			//char *pub_topic = xfwutmpp;
+			//char *pub_payload = "{\"id\":\123\,\"version\":\"1.0\",\"time\":{\"LightSwitch\":0}}";
+
+			/*if(strstr(data.pub.topic,"/rrpc/request/"){
+				data.pub.topic=
+				res = aiot_mqtt_pub(mqtt_handle, pub_topic, (uint8_t *)data.pub.payload, (uint32_t)packet->data.pub.payload_len, 0);
+				if (res < 0) {
+					printf("aiot_mqtt_sub failed, res: -0x%04X\n", -res);
+					return -1;
+				}
+				printf("aiot_mqtt_pub--------------xfwu----------\n");
+			}*/
         }
         break;
 
@@ -475,7 +814,7 @@ void demo_mqtt_default_recv_handler(void *handle, const aiot_mqtt_recv_t *packet
         break;
 
         default: {
-			printf("%d/%d/%d %d:%d:%d  22222222222222\n",lt->tm_year+1900, lt->tm_mon, lt->tm_mday, lt->tm_hour, lt->tm_min, lt->tm_sec);
+			//printf("%d/%d/%d %d:%d:%d  22222222222222\n",lt->tm_year+1900, lt->tm_mon, lt->tm_mday, lt->tm_hour, lt->tm_min, lt->tm_sec);
         }
     }
 }
@@ -566,7 +905,7 @@ static void usage(void)
     printf("Usage: mqtt_basic_demo [options]\n");
     printf("\n");
     printf("options:\n");
-    printf("  -p <product_key> -d <device_name> -s <device_secret>\n");
+    printf("-u <url>  -p <product_key> -d <device_name> -s <device_secret>\n");
     printf("  -h                Print usage\n");
     printf("\n");
     printf("\n");
@@ -632,6 +971,8 @@ int main(int argc, char *argv[])
         }
     }
 
+	printId_caches = createCache();
+	
     /* 配置SDK的底层依赖 */
     aiot_sysdep_set_portfile(&g_aiot_sysdep_portfile);
     /* 配置SDK的日志输出 */
@@ -687,6 +1028,14 @@ int main(int argc, char *argv[])
     aiot_mqtt_setopt(mqtt_handle, AIOT_MQTTOPT_RECV_HANDLER, (void *)demo_mqtt_default_recv_handler);
     /* 配置MQTT事件回调函数 */
     aiot_mqtt_setopt(mqtt_handle, AIOT_MQTTOPT_EVENT_HANDLER, (void *)demo_mqtt_event_handler);
+
+	topic_doc = (char *)malloc(1 + strlen(product_key) + 1 + strlen(device_name)+ 10);
+	*topic_doc = '/';
+	strcat(topic_doc,product_key);
+	strcat(topic_doc,"/");
+	strcat(topic_doc,device_name);
+	strcat(topic_doc,"/user/doc");
+	imei = device_name;
 
 	//bytian; BEGIN
 	signal(SIGPIPE, SIG_IGN);

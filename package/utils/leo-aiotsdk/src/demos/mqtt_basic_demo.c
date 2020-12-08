@@ -575,11 +575,14 @@ static void usage(void)
 int main(int argc, char *argv[])
 {
     int32_t     res = STATE_SUCCESS;
-    void       *mqtt_handle = NULL;
+    //void       *mqtt_handle = NULL;
     //char       *url = "iot-as-mqtt.ap-southeast-1.aliyuncs.com"; /* 阿里云平台上海站点的域名后缀  线下*/
-	char       *url = "iot-as-mqtt.cn-shanghai.aliyuncs.com"; /* 阿里云平台上海站点的域名后缀 线上*/
+	//char       *url = "iot.cn-shenzhen.aliyuncs.com"; /* 阿里云平台深圳站点的域名后缀 线上*/
+	//char       *url = "iot-cn-oew1vzsj40v.mqtt.iothub.aliyuncs.com";/*阿里云平台深圳站点的域名后缀 线下  new*/
+	char       *url = "iot-as-mqtt.ap-southeast-1.aliyuncs.com";
+						
     char        host[100] = {0}; /* 用这个数组拼接设备连接的云平台站点全地址, 规则是 ${productKey}.iot-as-mqtt.cn-shanghai.aliyuncs.com */
-    uint16_t    port = 1883;      /* 无论设备是否使用TLS连接阿里云平台, 目的端口都是443 */
+    uint16_t    port = 1883;      /* 无论设备是否使用TLS连接阿里云平台, 目的端口都是443 ,公共实例1883*/
     aiot_sysdep_network_cred_t cred; /* 安全凭据结构体, 如果要用TLS, 这个结构体中配置CA证书等参数 */
 	int opt;
 	
@@ -594,10 +597,8 @@ int main(int argc, char *argv[])
     char *device_name       = "8000000240159904";
     char *device_secret     = "74H4pLD7oyHuOeLokfMPV14bWgSw79Ft";
 	
-	
-	
 
-    while (-1 != (opt = getopt(argc, argv, "p:d:s:h"))) {
+    while (-1 != (opt = getopt(argc, argv, "u:p:d:s:h"))) {
 		
 		
      /*   printf("opt = %c\n", opt);
@@ -607,17 +608,21 @@ int main(int argc, char *argv[])
 		*/
 		
         switch(opt) {
+			case 'u':
+		    	url = optarg;
+				printf("aaaaaaaaaaaa = %s\n", url);
+                break;
             case 'p':
 		    	product_key = optarg;
-				//printf("aaaaaaaaaaaa = %s\n", product_key);
+				printf("aaaaaaaaaaaa = %s\n", product_key);
                 break;
             case 'd':
 		    	device_name = optarg;
-				//printf("bbbbbbbbbbb = %s\n", device_name);
+				printf("bbbbbbbbbbb = %s\n", device_name);
                 break;
 			case 's':
 				device_secret = optarg;
-				//printf("ccccccccccccc = %s\n", device_secret);
+				printf("ccccccccccccc = %s\n", device_secret);
 				break;
 			case 'h':
             default:
@@ -655,8 +660,17 @@ int main(int argc, char *argv[])
         cred.option = AIOT_SYSDEP_NETWORK_CRED_NONE;
     }
     */
+	if(strstr(url,"oew1vzsj40v")){
+    //snprintf(host, 100, "%s.%s", product_key, url);  old
+	//snprintf(host, 100, "%s%s", "", url);  new
+	    printf("xfwu----------------strstr-------aaaaaaaa");
+		snprintf(host, 100, "%s%s", "", url);
+	}else{
+		printf("xfwu----------------strstr-------bbbbbbbb");
+		snprintf(host, 100, "%s.%s", product_key, url);
+	}
 	
-    snprintf(host, 100, "%s.%s", product_key, url);
+	
     /* 配置MQTT服务器地址 */
     aiot_mqtt_setopt(mqtt_handle, AIOT_MQTTOPT_HOST, (void *)host);
     /* 配置MQTT服务器端口 */

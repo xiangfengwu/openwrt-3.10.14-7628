@@ -11,7 +11,7 @@ YJIMEI=`hexdump /dev/mtd3 -C -s 1024 -n 16 |head -1 |awk  -F "|" '{print $2}' |t
 #device_name=${YJIMEI}
 
 FirmwareVersion=`cat /etc/openwrt_release | grep DISTRIB_REVISION |awk -F '"' '{print $2}' | awk -F '-' '{print $2}'`
-xfwushowApkVersion=v1.1.0
+xfwushowApkVersion=v2.0.0
 
 
 report_prwifi() {
@@ -153,10 +153,10 @@ hnd_recvpub() {
 	xfwuPrintId=`cat /tmp/iot/yjprintid`
 	print_id=`/opt/bin/cjson -f "$payloadfile" -r "data:print_id"` 
 	seqno=`/opt/bin/cjson -f "$payloadfile" -r "seqno"`
-	 if [ "$cmd" == "30" ]; then
+#	 if [ "$cmd" == "30" ]; then
 	 #echo "xfwu-------aaaaaaaaaaaaaaaaaaaaaa" > /dev/console
-	 report_prtask "$seqno" "$print_id" 
-	 fi
+	 #report_prtask "$seqno" "$print_id" 
+#	 fi
 
 	case $cmd in
 		10)  #print_auth
@@ -171,6 +171,7 @@ hnd_recvpub() {
 			   if [ "$firmware_url" != "" ]; then
 						echo "xfwu---`date`---receiver cmd:$cmd to start download fimrware:$firmware_url -------------" >> /tmp/iot/$device_name.txt
 						curl  -o /tmp/iot/YJ_MTK.bin "$firmware_url"
+						#wget -O /tmp/iot/YJ_MTK.bin  "$firmware_url"
 						#curl  -o /tmp/iot/YJ_MTK.bin "http://software.tuyaji.cn/YJ_MTK.bin"
 						if [ -f /tmp/iot/YJ_MTK.bin ]; then
 							xfwuFIRMMD5=`md5sum /tmp/iot/YJ_MTK.bin |awk -F ' ' '{print $1}'`
@@ -220,6 +221,7 @@ hnd_recvpub() {
                                    #do
 										 echo "xfwu---`date`---cmd30 to start download pr.pdf-doc_url:$doc_url---" >> /tmp/iot/$device_name.txt
                                         curl  -o /tmp/iot/pr.pdf "$doc_url"
+										#wget -O /tmp/iot/pr.pdf  "$firmware_url"
                                         #echo "xfwu----------$xfwuVar" > /dev/console
                                         #curl --silent --max-time 3 -o /tmp/iot/pr.pdf "$doc_url"
                                         #wget -c  "$doc_url"  -O /tmp/iot/pr.pdf
@@ -229,14 +231,14 @@ hnd_recvpub() {
                                             #echo "xfwu--------$xfwuMD5-------$doc_md5" > /dev/console
                                             if [ "$xfwuMD5" = "$doc_md5" ]; then
 														report_prstatus "$seqno" "$print_id"
-														echo "xfwu---`date`---CMD:$cmd to print pr.pdf finished----" >> /tmp/iot/$device_name.txt
+														echo "xfwu---`date`---CMD:$cmd to print pr.pdf finished--print_id:$print_id--" >> /tmp/iot/$device_name.txt
                                                         #echo "xfwu------------print pr.pdf" > /dev/console
                                                         lp /tmp/iot/pr.pdf &
                                                         sleep 1
                                                         
                                                         break
 											else
-														echo "xfwu---`date`---CMD:$cmd download failed retry---xfwuVar:$xfwuVar----" >> /tmp/iot/$device_name.txt
+														echo "xfwu---`date`---CMD:$cmd download failed retry---xfwuVar:$xfwuVar--print_id:$print_id--" >> /tmp/iot/$device_name.txt
                                                         #echo "xfwu-------xfwuVar:$xfwuVar-----download failed retry" > /dev/console
                                             fi
                                          fi
@@ -277,7 +279,8 @@ hnd_recvpub() {
 }
 
 case $action in
-	connected|reconnect)
+	connected)
+		echo "xfwu---`date`--connected----" >> /tmp/iot/$device_name.txt
 		hnd_connected
 		sleep 1
         printWifi=$(iwconfig apcli0|grep ESSID | awk -F ':' '{print $2}')
@@ -304,6 +307,10 @@ case $action in
 			echo "xfwu---`date`---report prname none----" >> /tmp/iot/$device_name.txt
 			report_prname "none"
 		fi
+		;;
+	reconnect)
+		hnd_connected
+		echo "xfwu---`date`--reconnect----" >> /tmp/iot/$device_name.txt
 		;;
 	disconnect)
 		;;

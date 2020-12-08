@@ -57,9 +57,10 @@ iwpriv ra0 set SiteSurvey=2&& sleep 1 &&iwpriv ra0 get_site_survey|awk '{if (NR>
 		#cat /tmp/wifirelay > /www/luci-static/xfwuWifiList.txt
     fi           
 	if [ "$LENX" != "4" ]; then
+			iwconfig apcli0|grep ESSID | awk -F ':' '{print $2}' > /www/luci-static/wifiConnectApName.txt
       	      if [ "$YJIMEI" != "" ]; then
                  if [ "$YJSECRET" != "" ]; then
-				echo "xfwu---`date`---start mqtt to iot----" >> /tmp/iot/$YJIMEI.txt 
+				echo "xfwu---`date`---start mqtt to iot--${productUrl}---${productKey}---${YJIMEI}----${YJSECRET}--" >> /tmp/iot/$YJIMEI.txt 
 		     #echo "xfwu----------mqtt to start" > /dev/console 
 	             #/opt/bin/mqtt-basic-demo -u iot-cn-oew1vzsj40v.mqtt.iothub.aliyuncs.com -p a1Y72Hurhna  -d ${YJIMEI} -s ${YJSECRET} > /tmp/iot/xfwuMqtt.log
 				 /opt/bin/mqtt-basic-demo -u ${productUrl}  -p ${productKey}  -d ${YJIMEI} -s ${YJSECRET}

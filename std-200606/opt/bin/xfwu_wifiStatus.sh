@@ -12,7 +12,7 @@ devmem 0x10000060 32 0x55144450
 gpio l 2 0 0 5 0 4000 > /dev/null
 gpio l 1 0 0 5 0 4000 > /dev/null
 kkkp=3
-
+mqttNum=5
 xfwuUSB=$(ls -R /dev/bus/usb|wc -w)
 
 
@@ -60,11 +60,16 @@ iwpriv ra0 set SiteSurvey=2&& sleep 1 &&iwpriv ra0 get_site_survey|awk '{if (NR>
 			iwconfig apcli0|grep ESSID | awk -F ':' '{print $2}' > /www/luci-static/wifiConnectApName.txt
       	      if [ "$YJIMEI" != "" ]; then
                  if [ "$YJSECRET" != "" ]; then
-				echo "xfwu---`date`---start mqtt to iot--${productUrl}---${productKey}---${YJIMEI}----${YJSECRET}--" >> /tmp/iot/$YJIMEI.txt 
-		     #echo "xfwu----------mqtt to start" > /dev/console 
-	             #/opt/bin/mqtt-basic-demo -u iot-cn-oew1vzsj40v.mqtt.iothub.aliyuncs.com -p a1Y72Hurhna  -d ${YJIMEI} -s ${YJSECRET} > /tmp/iot/xfwuMqtt.log
-				 /opt/bin/mqtt-basic-demo -u ${productUrl}  -p ${productKey}  -d ${YJIMEI} -s ${YJSECRET}
-	             sleep 3
+					echo "xfwu---`date`---start mqtt to iot--${productUrl}---${productKey}---${YJIMEI}----${YJSECRET}--" >> /tmp/iot/$YJIMEI.txt 
+					#echo "xfwu----------mqtt to start" > /dev/console 
+					#/opt/bin/mqtt-basic-demo -u iot-cn-oew1vzsj40v.mqtt.iothub.aliyuncs.com -p a1Y72Hurhna  -d ${YJIMEI} -s ${YJSECRET} > /tmp/iot/xfwuMqtt.log
+					/opt/bin/mqtt-basic-demo -u ${productUrl}  -p ${productKey}  -d ${YJIMEI} -s ${YJSECRET}
+					sleep 3
+					let mqttNum=$mqttNum-1
+					if [ $mqttNum -ne 0 ]; then
+
+						rm /opt/bin/xfwusecret
+					fi
                  fi
               fi
 	fi

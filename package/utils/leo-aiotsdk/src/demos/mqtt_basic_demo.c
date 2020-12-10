@@ -554,11 +554,12 @@ void * my_memcpy(void * dest, const void *src, size_t count)
 	return dest;
 }
 
-
+//存在，就替换字符串；不存在，就原字符串返回
 char* strrep(char *str, char *origin, char *replacement) {
 	// printf("str:%s\n", str);
 	// printf("origin:%s\n", origin);
 	// printf("replacement:%s\n", replacement);
+	// strstr(str, origin)存在，返回origin在str中出现的地址；不存在，返回null
 	char* index = strstr(str, origin);
 	if (index != NULL) {
 		uint8_t ori_len = strlen(origin);
@@ -589,6 +590,7 @@ char* strrep(char *str, char *origin, char *replacement) {
 	return str;
 }
 
+//获取字符串段，并返回
 char* substr(char* src,int len){
 	if(len<1)
 		return NULL;
@@ -607,7 +609,7 @@ char* substr(char* src,int len){
 
 CACHE* createCache() {
 	CACHE *cache = (CACHE *)malloc(sizeof(CACHE));
-	cache->maxSize = 3;
+	cache->maxSize = 10;
 	cache->tail = 0;
 	cache->data = (int *)malloc(cache->maxSize * sizeof(int));
 	int i = 0;
@@ -641,6 +643,143 @@ int getCache(CACHE *cache, int data) {
 		i++;
 	}
 	return 0;
+}
+
+
+typedef char* QElementType;
+
+typedef struct QNode {
+	QElementType data;
+	struct QNode *next;
+}QNODE, *QNodePtr;
+
+typedef struct {// 带头结点的链队列
+	QNodePtr head;
+	QNodePtr tail;
+}LinkedQueue;
+
+LinkedQueue printQueue;
+
+void initQueue(LinkedQueue *linkQueue) {
+	// 初始化头结点
+	linkQueue->head = (QNodePtr)malloc(sizeof(QNODE));
+	linkQueue->tail = linkQueue->head;
+}
+
+void enqueue(LinkedQueue *linkQueue, QElementType data) {
+	// 尾插法
+	if (linkQueue == NULL || data == NULL) {
+		return;
+	}
+	QNodePtr newNode = (QNodePtr)malloc(sizeof(QNODE));
+	newNode->data = data;
+	newNode->next = NULL;
+
+	linkQueue->tail->next = newNode;
+	linkQueue->tail = newNode;
+}
+
+QElementType dequeue(LinkedQueue *linkQueue) {
+	if (linkQueue == NULL || linkQueue->tail == linkQueue->head) {
+		return NULL;
+	}
+	QNodePtr target = linkQueue->head->next;// 目标节点
+	linkQueue->head->next = target->next;
+	if (linkQueue->head->next == NULL) {//为空说明到了队尾，更新尾结点
+		linkQueue->tail = linkQueue->head;
+	}
+	QElementType result = target->data;
+	free(target);
+	return result;
+}
+
+
+void *cmd_processing(void *args){
+	char **cmdMsg = (char**)args;
+	char *topic = cmdMsg[0];
+	char *payload = cmdMsg[1];
+	if( topic == NULL ){
+		return 0;
+	}
+	//log_info("cmd thread, topic:%s\n",topic);
+	//log_info("cmd thread, payload:%s\n",payload);
+	
+	write_filedata("/tmp/iot/pubtopic.json", topic, strlen(topic) );
+	write_filedata("/tmp/iot/pubpayload.json", payload, strlen(payload) );
+	execute("/opt/bin/iot_rcv.sh recvpub /tmp/iot/pubtopic.json /tmp/iot/pubpayload.json", 0);
+}
+
+void *printThread(void *args){
+	while( 1 ){
+		QElementType cmdStr = dequeue(&printQueue);
+		if( cmdStr != NULL ){
+			// 处理打印作业
+			cJSON *payload_node = cJSON_Parse(cmdStr);
+			if( payload_node==NULL )
+				continue;
+			//cJSON *cmd_node = cJSON_GetObjectItem(payload_node, "cmd");
+			//int cmd = cmd_node->valueint;
+			cJSON *seqno_node = cJSON_GetObjectItem(payload_node, "seqno");
+			int seqno = seqno_node->valueint;
+			cJSON *data_node = cJSON_GetObjectItem(payload_node, "data");
+			cJSON *printId_node = cJSON_GetObjectItem(data_node, "print_id");
+			int printId = printId_node->valueint;
+			cJSON *docUrl_node = cJSON_GetObjectItem(data_node, "doc_url");
+			char *doc_url = docUrl_node->valuestring;
+			
+			log_info("Received printing request, printId: %d\n", printId);
+			
+			// 收到30先回复
+			iot_replyPrintFile( cmdStr );
+			
+			// 判断是否已打印过
+			if(getCache(printId_caches,printId) != 0){// 已打印过的不再处理
+				// 回复8
+				log_info("printId[%d] already printed!\n",printId);
+				iot_replyPrintStatus(printId,PRINT_STATUS_8_PRINTED,seqno);
+				break;
+			}
+			putCache(printId_caches,printId);
+			
+			// 回复2
+			iot_replyPrintStatus(printId,PRINT_STATUS_2_START,seqno);
+			
+			char file_path[50];
+			sprintf(file_path, "%s%d", "/tmp/iot/", printId );
+			
+			// 下载
+			char download_cmd[300];
+			log_info("Downloading %s...\n", doc_url);
+			sprintf(download_cmd, "%s%s%s%s", "wget -t 3 -T 10 -O ", file_path, " ", doc_url );
+			log_info("%s\n",download_cmd);
+			system(download_cmd);
+			
+			if(access(file_path, F_OK) == -1){
+				// 文件不存在或无权限，下载失败，回复3
+				log_info("[%d]Download failed!\n", printId);
+				iot_replyPrintStatus(printId,PRINT_STATUS_3_DOWNLOAD_FAIL,seqno);
+				break;
+			}
+			log_info("Downloaded.\n");
+			
+			// 回复5
+			iot_replyPrintStatus(printId,PRINT_STATUS_5_PRINTING,seqno);
+			
+			// 打印
+			char print_cmd[100];
+			log_info("Sending print job...\n");
+			sprintf(print_cmd, "lp %s && rm %s",  file_path, file_path );
+			log_info("%s\n",print_cmd);
+			system(print_cmd);
+			log_info("Print job sent successfully and file deleted.\n");
+			
+			// 打印完成回复6
+			iot_replyPrintStatus(printId,PRINT_STATUS_6_FINISH,seqno);
+		} else {
+			//log_info("sleep one second.\n");
+			sleep(1);
+		}
+	}
 }
 
 void iot_replyPrintStatus(int print_id, int print_status, int seqno) {
@@ -715,65 +854,9 @@ void demo_mqtt_default_recv_handler(void *handle, const aiot_mqtt_recv_t *packet
 				cJSON *payload_node = cJSON_Parse(pub_payload);
 				cJSON *cmd_node = cJSON_GetObjectItem(payload_node, "cmd");
 				int cmd = cmd_node->valueint;
-				cJSON *seqno_node = cJSON_GetObjectItem(payload_node, "seqno");
-				int seqno = seqno_node->valueint;
-					
-				if(cmd == CMD_30_PRINT_FLIE){
-					
-					cJSON *data_node = cJSON_GetObjectItem(payload_node, "data");
-					cJSON *printId_node = cJSON_GetObjectItem(data_node, "print_id");
-					int printId = printId_node->valueint;
-					cJSON *docUrl_node = cJSON_GetObjectItem(data_node, "doc_url");
-					char *doc_url = docUrl_node->valuestring;
-					
-					log_info("Received printing request, printId: %d\n", printId);
-					
-					// 收到30先回复
-					iot_replyPrintFile( pub_payload );
-					
-					// 判断是否已打印过
-					if(getCache(printId_caches,printId) != 0){// 已打印过的不再处理
-						// 回复8
-						log_info("printId[%d] already printed!\n",printId);
-						iot_replyPrintStatus(printId,PRINT_STATUS_8_PRINTED,seqno);
-						break;
-					}
-					putCache(printId_caches,printId);
-					
-					// 回复2
-					iot_replyPrintStatus(printId,PRINT_STATUS_2_START,seqno);
-					
-					char file_path[50];
-					sprintf(file_path, "%s%d", "/tmp/iot/", printId );
-					
-					// 下载
-					char download_cmd[300];
-					log_info("Downloading %s...\n", doc_url);
-					sprintf(download_cmd, "%s%s%s%s", "wget -t 3 -T 10 -O ", file_path, " ", doc_url );
-					log_info("%s\n",download_cmd);
-					system(download_cmd);
-					
-					if(access(file_path, F_OK) == -1){
-						// 文件不存在或无权限，下载失败，回复3
-						log_info("[%d]Download failed!\n", printId);
-						iot_replyPrintStatus(printId,PRINT_STATUS_3_DOWNLOAD_FAIL,seqno);
-						break;
-					}
-					log_info("Downloaded.\n");
-					
-					// 回复5
-					iot_replyPrintStatus(printId,PRINT_STATUS_5_PRINTING,seqno);
-					
-					// 打印
-					char print_cmd[100];
-					log_info("Sending print job...\n");
-					sprintf(print_cmd, "lp %s && rm %s",  file_path, file_path );
-					log_info("%s\n",print_cmd);
-					system(print_cmd);
-					log_info("Print job sent successfully and file deleted.\n");
-					
-					// 打印完成回复6
-					iot_replyPrintStatus(printId,PRINT_STATUS_6_FINISH,seqno);
+				if(cmd == CMD_30_PRINT_FLIE){// 打印任务放入队列
+					enqueue( &printQueue, pub_payload );
+					cJSON_Delete(payload_node);
 					break;
 				}
 				cJSON_Delete(payload_node);
@@ -783,13 +866,26 @@ void demo_mqtt_default_recv_handler(void *handle, const aiot_mqtt_recv_t *packet
 			
 			//bytian. call external shell script
 			//asprintf(&command, "%s %s %s", "/opt/bin/iot_rcv.sh", packet->data.pub.topic, packet->data.pub.payload);
-			write_filedata("/tmp/iot/pubtopic.json", packet->data.pub.topic, packet->data.pub.topic_len);
-			write_filedata("/tmp/iot/pubpayload.json", packet->data.pub.payload, packet->data.pub.payload_len);
+			//write_filedata("/tmp/iot/pubtopic.json", packet->data.pub.topic, packet->data.pub.topic_len);
+			//write_filedata("/tmp/iot/pubpayload.json", packet->data.pub.payload, packet->data.pub.payload_len);
 			//if (command) {
-				execute("/opt/bin/iot_rcv.sh recvpub /tmp/iot/pubtopic.json /tmp/iot/pubpayload.json", 0);
+				//execute("/opt/bin/iot_rcv.sh recvpub /tmp/iot/pubtopic.json /tmp/iot/pubpayload.json", 0);
 				//free(command);
 			//}
-			
+			//log_info("test Thread0\n");
+			//char *cmdMsg[2];
+			//cmdMsg[0] = pub_topic;
+			//cmdMsg[1] = pub_payload;
+			char **cmdMsg = (char**)malloc(sizeof(char*) * 2);
+			*cmdMsg = pub_topic;
+			*(cmdMsg + 1) = pub_payload;
+			//log_info("topic addr: %d\n", pub_topic);
+			//log_info("payload addr: %d\n", pub_payload);
+			//log_info("topic addr: %s\n", pub_topic);
+			//log_info("payload addr: %s\n", pub_payload);
+			pthread_t cmdThread;
+			//log_info("test Thread\n");
+			pthread_create(&cmdThread, NULL, cmd_processing, cmdMsg);
 
 			//char *pub_topic = "/sys/a2Wl5a1kUzm/8000000781612294/rrpc/request/+";
 			//char *pub_topic = xfwutmpp;
@@ -972,6 +1068,9 @@ int main(int argc, char *argv[])
     }
 
 	printId_caches = createCache();
+	initQueue(&printQueue);
+	pthread_t _printThread;
+	pthread_create(&_printThread, NULL, printThread, NULL);
 	
     /* 配置SDK的底层依赖 */
     aiot_sysdep_set_portfile(&g_aiot_sysdep_portfile);
@@ -1068,8 +1167,7 @@ int main(int argc, char *argv[])
 	char *tmpk="/";
 	char *tmpm="/user/push";
 	char *tmp = (char *) malloc(strlen(tmpk) + strlen(product_key) + strlen(tmpk) + strlen(device_name)+ strlen(tmpm));
-	
-	
+
 	
 	strcpy(tmp,tmpk);
 	strcat(tmp,product_key);

@@ -84,8 +84,6 @@ int listenfd = -1;
 #define PRINT_STATUS_7_ERROR 7
 #define PRINT_STATUS_8_PRINTED 8
 
-#define NO_VALUE -1
-
 #define LOG_TO_FILE 1
 
 void *mqtt_handle = NULL;
@@ -556,12 +554,11 @@ void * my_memcpy(void * dest, const void *src, size_t count)
 	return dest;
 }
 
-//存在，就替换字符串；不存在，就原字符串返回
+
 char* strrep(char *str, char *origin, char *replacement) {
 	// printf("str:%s\n", str);
 	// printf("origin:%s\n", origin);
 	// printf("replacement:%s\n", replacement);
-	// strstr(str, origin)存在，返回origin在str中出现的地址；不存在，返回null
 	char* index = strstr(str, origin);
 	if (index != NULL) {
 		uint8_t ori_len = strlen(origin);
@@ -592,7 +589,6 @@ char* strrep(char *str, char *origin, char *replacement) {
 	return str;
 }
 
-//获取字符串段，并返回
 char* substr(char* src,int len){
 	if(len<1)
 		return NULL;
@@ -648,179 +644,58 @@ int getCache(CACHE *cache, int data) {
 }
 
 
-// typedef char* QElementType;
+typedef char* QElementType;
 
-// typedef struct QNode {
-	// QElementType data;
-	// struct QNode *next;
-// }QNODE, *QNodePtr;
+typedef struct QNode {
+	QElementType data;
+	struct QNode *next;
+}QNODE, *QNodePtr;
 
-// typedef struct {// 带头结点的链队列
-	// QNodePtr head;
-	// QNodePtr tail;
-	// int size;
-// }LinkedQueue;
+typedef struct {// 带头结点的链队列
+	QNodePtr head;
+	QNodePtr tail;
+	int size;
+}LinkedQueue;
 
-// LinkedQueue printQueue;
+LinkedQueue printQueue;
 
-// void initQueue(LinkedQueue *linkQueue) {
-	//初始化头结点
-	// linkQueue->head = (QNodePtr)malloc(sizeof(QNODE));
-	// linkQueue->tail = linkQueue->head;
-	// linkQueue->size = 0;
-// }
-
-// int enqueue(LinkedQueue *linkQueue, QElementType data) {
-	//尾插法
-	// if (linkQueue == NULL || data == NULL) {
-		// return;
-	// }
-	// QNodePtr newNode = (QNodePtr)malloc(sizeof(QNODE));
-	// newNode->data = data;
-	// newNode->next = NULL;
-
-	// linkQueue->tail->next = newNode;
-	// linkQueue->tail = newNode;
-	// linkQueue->size++;
-	// return linkQueue->size;
-// }
-
-// QElementType dequeue(LinkedQueue *linkQueue) {
-	// if (linkQueue == NULL || linkQueue->tail == linkQueue->head) {
-		// return NULL;
-	// }
-	// QNodePtr target = linkQueue->head->next;// 目标节点
-	// linkQueue->head->next = target->next;
-	// if (linkQueue->head->next == NULL) {//为空说明到了队尾，更新尾结点
-		// linkQueue->tail = linkQueue->head;
-	// }
-	// QElementType result = target->data;
-	// free(target);
-	// linkQueue->size--;
-	// return result;
-// }
-
-typedef struct ElementType {
-	int print_id;
-	int seqno;
-	char *payload;
-	
-	int no;
-	int total_no;// totalDoc
-
-	int fragment;// whichFragment
-	int total_fragment;
-
-	int copies_num;// whichCopies
-	int total_copies;// copies
-	
-	int print_doc_id;
-	int fragments_id;
-}ElementType;
-
-ElementType *currentTask;// 记录当前打印任务的总文档数，及当前文档的总分片数
-
-typedef struct ListNode {
-	ElementType *data;
-	struct ListNode *next;
-}ListNode;
-
-typedef struct LinkedList {// 普通线性表，存CMD30消息
-	ListNode *head;
-}LinkedList;
-
-LinkedList linkedList;
-
-void initLinkedList(LinkedList *linked_list) {
-	if (linked_list == NULL) {
-		return;
-	}
-	linked_list->head = (ListNode*)malloc(sizeof(ListNode));
-	linked_list->head->data = NULL;
-	linked_list->head->next = NULL;
+void initQueue(LinkedQueue *linkQueue) {
+	// 初始化头结点
+	linkQueue->head = (QNodePtr)malloc(sizeof(QNODE));
+	linkQueue->tail = linkQueue->head;
+	linkQueue->size = 0;
 }
 
-void addNode(LinkedList *linked_list, ElementType *data) {
-	if (linked_list == NULL || linked_list->head == NULL) {
+int enqueue(LinkedQueue *linkQueue, QElementType data) {
+	// 尾插法
+	if (linkQueue == NULL || data == NULL) {
 		return;
 	}
-	ListNode *elememt = linked_list->head;
-	while (elememt->next != NULL) {
-		elememt = elememt->next;
-	}
-	ListNode *newNode = (ListNode*)malloc(sizeof(ListNode));
+	QNodePtr newNode = (QNodePtr)malloc(sizeof(QNODE));
 	newNode->data = data;
 	newNode->next = NULL;
-	elememt->next = newNode;
+
+	linkQueue->tail->next = newNode;
+	linkQueue->tail = newNode;
+	linkQueue->size++;
+	return linkQueue->size;
 }
 
-
-ElementType* findNextTask(LinkedList *linked_list) {
-	// 准备下一个文件的打印
-	if (linked_list == NULL || linked_list->head == NULL) {
+QElementType dequeue(LinkedQueue *linkQueue) {
+	if (linkQueue == NULL || linkQueue->tail == linkQueue->head) {
 		return NULL;
 	}
-	ListNode *elememt = linked_list->head;
-	if (elememt->next != NULL) {
-		ElementType *print_task = (ElementType*)malloc(sizeof(ElementType));
-		
-		print_task->print_id = elememt->next->data->print_id;
-		print_task->seqno = elememt->next->data->seqno;
-		print_task->total_no = elememt->next->data->total_no;
-		
-		
-		print_task->no = NO_VALUE;
-		
-		print_task->fragment = NO_VALUE;
-		print_task->total_fragment = NO_VALUE;
-		
-		print_task->copies_num = NO_VALUE;
-		print_task->total_copies = NO_VALUE; 
-		
-		print_task->print_doc_id = NO_VALUE; 
-		print_task->fragments_id = NO_VALUE; 
-		
-		print_task->payload = NULL;
-		return print_task;
+	QNodePtr target = linkQueue->head->next;// 目标节点
+	linkQueue->head->next = target->next;
+	if (linkQueue->head->next == NULL) {//为空说明到了队尾，更新尾结点
+		linkQueue->tail = linkQueue->head;
 	}
-	return NULL;
+	QElementType result = target->data;
+	free(target);
+	linkQueue->size--;
+	return result;
 }
 
-ElementType* findFragment(LinkedList *linked_list, int printId, int no, int fragment) {
-	if (linked_list == NULL || linked_list->head == NULL) {
-		return NULL;
-	}
-	ListNode *elememt = linked_list->head;
-	while (elememt->next != NULL) {
-		// ListNode *last_elememt = elememt;// 保存上一个节点
-		elememt = elememt->next;
-		ElementType* _fragment = elememt->data;
-		if (printId == _fragment->print_id && no == _fragment->no && fragment == _fragment->fragment) {
-			// last_elememt->next = elememt->next;// 删除节点
-			return _fragment;
-		}
-	}
-	return NULL;
-}
-
-void delNode(LinkedList *linked_list, int printId) {
-	if (linked_list == NULL || linked_list->head == NULL) {
-		return;
-	}
-	ListNode *elememt = linked_list->head;
-	while (elememt->next != NULL) {
-		ListNode *last_elememt = elememt;// 保存上一个节点
-		elememt = elememt->next;
-		ElementType* _fragment = elememt->data;
-		if (printId == _fragment->print_id) {
-			// 删除节点
-			log_info("Delete node printId:%d, no:%d, fragment:%d\n", _fragment->print_id, _fragment->no, _fragment->fragment);
-			last_elememt->next = elememt->next;
-			free(elememt);
-			elememt = last_elememt;
-		}
-	}
-}
 
 void *cmd_processing(void *args){
 	char **cmdMsg = (char**)args;
@@ -837,79 +712,83 @@ void *cmd_processing(void *args){
 	execute("/opt/bin/iot_rcv.sh recvpub /tmp/iot/pubtopic.json /tmp/iot/pubpayload.json", 0);
 }
 
-// void iot_replyPrintStatus(int print_id, int no, int copies, int fragment, int print_status, int seqno, int print_doc_id, int fragments_id) {
-	//// char payload[300];
-	//// sprintf(payload, "{\"cmd\":31,\"data\":{\"no\":%d,\"print_id\":%d, \"copies\":%d, \"whichFragment\":%d, \"print_status\":%d},\"imei\":\"%s\",\"seqno\":%d}", no, print_id, fragment, print_status, imei, seqno);
-	// cJSON *cmd_node = cJSON_CreateObject();
-	// cJSON_AddStringToObject(cmd_node, "imei", imei);
-	// cJSON_AddNumberToObject(cmd_node, "seqno", seqno);
-	// cJSON_AddNumberToObject(cmd_node, "cmd", 31);
-	// cJSON *data_node = cJSON_CreateObject();
-	// cJSON_AddItemToObject(cmd_node,"data", data_node);
-	
-	// if(no != NO_VALUE)
-		// cJSON_AddNumberToObject(data_node, "no", no);
-	// if(print_id != NO_VALUE)
-		// cJSON_AddNumberToObject(data_node, "print_id", print_id);
-	// if(copies != NO_VALUE)
-		// cJSON_AddNumberToObject(data_node, "copies", copies);
-	// if(fragment != NO_VALUE)
-		// cJSON_AddNumberToObject(data_node, "whichFragment", fragment);
-	// if(print_status != NO_VALUE)
-		// cJSON_AddNumberToObject(data_node, "print_status", print_status);
-	// if(print_doc_id != NO_VALUE)
-		// cJSON_AddNumberToObject(data_node, "printDocId", print_doc_id);
-	// if(fragments_id != NO_VALUE)
-		// cJSON_AddNumberToObject(data_node, "fragmentsId", fragments_id);
-	
-	// char *payload = cJSON_Print(cmd_node);
-		
-	// int res = aiot_mqtt_pub(mqtt_handle, topic_doc, (uint8_t *)payload, (uint32_t)strlen(payload), 0);
-	// if (res < 0) {
-		// log_info("Reply CMD31 failed, %s\n", payload);
-		// return;
-	// }
-	// log_info( "CMD31 >>>>> %s\n", payload );
-// }
+void *printThread(void *args){
+	while( 1 ){
+		QElementType cmdStr = dequeue(&printQueue);
+		if( cmdStr != NULL ){
+			// 处理打印作业
+			cJSON *payload_node = cJSON_Parse(cmdStr);
+			if( payload_node==NULL )
+				continue;
+			//cJSON *cmd_node = cJSON_GetObjectItem(payload_node, "cmd");
+			//int cmd = cmd_node->valueint;
+			cJSON *seqno_node = cJSON_GetObjectItem(payload_node, "seqno");
+			int seqno = seqno_node->valueint;
+			cJSON *data_node = cJSON_GetObjectItem(payload_node, "data");
+			cJSON *printId_node = cJSON_GetObjectItem(data_node, "print_id");
+			int printId = printId_node->valueint;
+			cJSON *docUrl_node = cJSON_GetObjectItem(data_node, "doc_url");
+			char *doc_url = docUrl_node->valuestring;
+			
+			log_info("Processing printing request, printId: %d\n", printId);
+			
+			// 收到30先回复
+			//iot_replyPrintFile( cmdStr ); 入队前就已回复
+			
+			// 判断是否已打印过
+			if(getCache(printId_caches,printId) != 0){// 已打印过的不再处理
+				// 回复8
+				log_info("printId[%d] already printed!\n",printId);
+				iot_replyPrintStatus(printId,PRINT_STATUS_8_PRINTED,seqno);
+				continue;
+			}
+			putCache(printId_caches,printId);
+			
+			// 回复2
+			iot_replyPrintStatus(printId,PRINT_STATUS_2_START,seqno);
+			
+			char file_path[50];
+			sprintf(file_path, "%s%d", "/tmp/iot/", printId );
+			
+			// 下载
+			char download_cmd[300];
+			log_info("Downloading %s...\n", doc_url);
+			sprintf(download_cmd, "%s%s%s%s", "wget -t 3 -T 10 -O ", file_path, " ", doc_url );
+			log_info("%s\n",download_cmd);
+			system(download_cmd);
+			
+			if(access(file_path, F_OK) == -1){
+				// 文件不存在或无权限，下载失败，回复3
+				log_info("[%d]Download failed!\n", printId);
+				iot_replyPrintStatus(printId,PRINT_STATUS_3_DOWNLOAD_FAIL,seqno);
+				continue;
+			}
+			log_info("Downloaded.\n");
+			
+			// 回复5
+			iot_replyPrintStatus(printId,PRINT_STATUS_5_PRINTING,seqno);
+			
+			// 打印
+			char print_cmd[100];
+			log_info("Sending print job...\n");
+			sprintf(print_cmd, "lp %s && rm %s",  file_path, file_path );
+			log_info("%s\n",print_cmd);
+			system(print_cmd);
+			log_info("Print job sent successfully and file deleted.\n");
+			
+			// 打印完成回复6
+			iot_replyPrintStatus(printId,PRINT_STATUS_6_FINISH,seqno);
+		} else {
+			//log_info("sleep one second.\n");
+			sleep(1);
+		}
+	}
+}
 
-void iot_replyPrintStatus(ElementType *element, int print_status) {
-	//char payload[300];
-	// sprintf(payload, "{\"cmd\":31,\"data\":{\"no\":%d,\"print_id\":%d, \"copies\":%d, \"whichFragment\":%d, \"print_status\":%d},\"imei\":\"%s\",\"seqno\":%d}", no, print_id, fragment, print_status, imei, seqno);
-	cJSON *cmd_node = cJSON_CreateObject();
-	cJSON_AddStringToObject(cmd_node, "imei", imei);
-	cJSON_AddNumberToObject(cmd_node, "seqno", element->seqno);
-	cJSON_AddNumberToObject(cmd_node, "cmd", 31);
-	cJSON *data_node = cJSON_CreateObject();
-	cJSON_AddItemToObject(cmd_node,"data", data_node);
-	
-	if(element->print_id != NO_VALUE)
-		cJSON_AddNumberToObject(data_node, "print_id", element->print_id);
-	
-	if(element->no != NO_VALUE)
-		cJSON_AddNumberToObject(data_node, "no", element->no);
-	if(element->total_no != NO_VALUE)
-		cJSON_AddNumberToObject(data_node, "totalDoc", element->total_no);
-	
-	if(element->copies_num != NO_VALUE)
-		cJSON_AddNumberToObject(data_node, "whichCopies", element->copies_num);
-	if(element->total_copies != NO_VALUE)
-		cJSON_AddNumberToObject(data_node, "copies", element->total_copies);
-	
-	if(element->fragment != NO_VALUE)
-		cJSON_AddNumberToObject(data_node, "whichFragment", element->fragment);
-	if(element->total_fragment != NO_VALUE)
-		cJSON_AddNumberToObject(data_node, "totalFragment", element->total_fragment);	
-
-	if(element->print_doc_id != NO_VALUE)
-		cJSON_AddNumberToObject(data_node, "printDocId", element->print_doc_id);
-	if(element->fragments_id != NO_VALUE)
-		cJSON_AddNumberToObject(data_node, "fragmentsId", element->fragments_id);
-	
-	if(print_status != NO_VALUE)
-		cJSON_AddNumberToObject(data_node, "print_status", print_status);
-	
-	char *payload = cJSON_Print(cmd_node);
-		
+void iot_replyPrintStatus(int print_id, int print_status, int seqno) {
+	char payload[300];
+	sprintf(payload, "%s%d%s%d%s%s%s%d%s", "{\"cmd\":31,\"data\":{\"no\":1,\"print_id\":", print_id, ", \"print_status\":", print_status, "},\"imei\":\"", imei, "\",\"seqno\":", seqno, "}");
+	//char *topic = strcat(topic_doc,"user/doc");
 	int res = aiot_mqtt_pub(mqtt_handle, topic_doc, (uint8_t *)payload, (uint32_t)strlen(payload), 0);
 	if (res < 0) {
 		log_info("Reply CMD31 failed, %s\n", payload);
@@ -937,131 +816,6 @@ void iot_reply(char *topic, char *payload){
 	}
 	log_info( "Reply IoT >>>>> topic: %s, payload: %s\n", topic, payload );
 }
-
-
-void *printThread(void *args){
-	int i = 0;
-	while (1) {
-		currentTask = findNextTask(&linkedList);// 得到printId和总份数total_no
-		if (currentTask != NULL) {
-
-			// 判断是否已打印过
-			if(getCache(printId_caches, currentTask->print_id) != 0){// 已打印过的不再处理
-				// 回复8
-				log_info("printId[%d] already printed!\n", currentTask->print_id);
-				iot_replyPrintStatus(currentTask, PRINT_STATUS_8_PRINTED);
-				delNode(&linkedList, currentTask->print_id);
-				continue;
-			}
-			putCache(printId_caches, currentTask->print_id);
-
-			log_info("printId[%d] is ready to print.\n", currentTask->print_id);
-			iot_replyPrintStatus(currentTask, PRINT_STATUS_2_START);
-			
-			currentTask->no = 1;
-			currentTask->fragment = 1;
-			currentTask->copies_num = 1;
-			while (1) {// 从这里开始会把一个printId的全部文件都打完
-				ElementType *fragment = findFragment(&linkedList, currentTask->print_id, currentTask->no, currentTask->fragment);
-				if (fragment != NULL) {
-					i = 0;
-					// 处理打印作业
-					cJSON *payload_node = cJSON_Parse(fragment->payload);
-					if( payload_node == NULL ) continue;
-					cJSON *data_node = cJSON_GetObjectItem(payload_node, "data");
-					if( data_node == NULL ) continue;
-					cJSON *docUrl_node = cJSON_GetObjectItem(data_node, "doc_url");
-					if( docUrl_node == NULL ) continue;
-					char *doc_url = docUrl_node->valuestring;
-					
-					if( currentTask->copies_num == 1 && currentTask->fragment == 1 ){// 第一个文件的第一份的第一个分片 fragment->no == 1 &&
-						log_info("printId[%d] printing the %d copies.\n", fragment->print_id, fragment->no);
-						iot_replyPrintStatus(fragment, PRINT_STATUS_5_PRINTING);
-					}
-					
-					char file_path[50];
-					sprintf(file_path, "%s%d", "/tmp/iot/", fragment->print_id );
-					
-					// 下载
-					char download_cmd[300];
-					sprintf(download_cmd, "%s%s%s%s", "wget -t 3 -T 10 -O ", file_path, " ", doc_url );
-					log_info("printId[%d] is downloading [%s]...\n", fragment->print_id, download_cmd);
-					system(download_cmd);
-					
-					if(access(file_path, F_OK) == -1){
-						// 文件不存在或无权限，下载失败，回复3
-						log_info("[%d]Download failed!\n", fragment->print_id);
-						iot_replyPrintStatus(fragment, PRINT_STATUS_3_DOWNLOAD_FAIL);
-						delNode(&linkedList, currentTask->print_id);// 有文件失败，放弃整个任务
-						break;
-					}
-					log_info("printId[%d] downloaded.\n", fragment->print_id);
-					
-					// 回复5
-					//iot_replyPrintStatus(printId,PRINT_STATUS_5_PRINTING,seqno);
-					
-					// 打印
-					char print_cmd[100];
-					log_info("Sending print job...\n");
-					sprintf(print_cmd, "lp %s && rm %s",  file_path, file_path );
-					log_info("%s\n",print_cmd);
-					system(print_cmd);
-					log_info("Print job sent successfully and file deleted.\n");
-					
-					// 打印完成回复6
-					fragment->copies_num = currentTask->copies_num;
-					if(currentTask->fragment!=2)// FIXME
-					iot_replyPrintStatus(fragment, PRINT_STATUS_6_FINISH);
-
-					// 更新currentTask
-					if (fragment->total_fragment == currentTask->fragment) {
-						// 一个文件的所有分片已打印完，开始处理份数问题
-						if (fragment->total_copies == currentTask->copies_num) {
-							if (fragment->total_no == currentTask->no) {
-								// 一个printId的全部文件都打完了，删除该printId的所有消息
-								delNode(&linkedList, currentTask->print_id);
-								break;
-							}
-							else { 
-								currentTask->fragment = 1;
-								currentTask->copies_num = 1;
-								currentTask->no++;
-							}
-						}
-						else {
-							currentTask->copies_num++;// 还没打够份数，开始打下一份
-							currentTask->fragment = 1;
-							log_info("printId[%d] now printing next copies.\n", currentTask->print_id, currentTask->copies_num);
-						}
-					}
-					else {
-						currentTask->fragment++;
-					}
-				}
-				else {
-					// 等服务器推送该分片，确保按序打印
-					log_info("Waiting printId:[%d] no:[%d] fragment:[%d]\n",currentTask->print_id, currentTask->no, currentTask->fragment);
-					// 超时判断
-					if(i++ > 40){
-						// 删除该printId的所有任务
-						log_info("printId:[%d] no:[%d] fragment:[%d] timeout!\n", currentTask->print_id, currentTask->no, currentTask->fragment);
-						iot_replyPrintStatus(currentTask, PRINT_STATUS_7_ERROR);
-						delNode(&linkedList, currentTask->print_id);// 有文件失败，放弃整个任务
-						break;
-					}
-					sleep(1);
-				}
-			}
-			currentTask = NULL;
-		}
-		else {
-			//log_info("idle %ds.\n",i++);
-			sleep(1);
-		}
-	}
-}
-
-#define BREAK_IF_NULL(x) if(x == NULL) break;
 
 /* MQTT默认消息处理回调, 当SDK从服务器收到MQTT消息时, 且无对应用户回调处理时被调用 */
 void demo_mqtt_default_recv_handler(void *handle, const aiot_mqtt_recv_t *packet, void *userdata)
@@ -1104,57 +858,9 @@ void demo_mqtt_default_recv_handler(void *handle, const aiot_mqtt_recv_t *packet
 				cJSON *cmd_node = cJSON_GetObjectItem(payload_node, "cmd");
 				int cmd = cmd_node->valueint;
 				if(cmd == CMD_30_PRINT_FLIE){// 打印任务放入队列
-				
 					iot_replyPrintFile( pub_payload );
-					
-					//int size = enqueue( &printQueue, pub_payload );
-					//log_info("Printjob queue size:%d\n",size);
-					
-					cJSON *seqno_node = cJSON_GetObjectItem(payload_node, "seqno"); BREAK_IF_NULL(seqno_node);
-					int seqno = seqno_node->valueint;
-					
-					cJSON *data_node = cJSON_GetObjectItem(payload_node, "data"); BREAK_IF_NULL(data_node);
-					
-					cJSON *printId_node = cJSON_GetObjectItem(data_node, "print_id"); BREAK_IF_NULL(printId_node);
-					int printId = printId_node->valueint;
-					
-					cJSON *no_node = cJSON_GetObjectItem(data_node, "no"); BREAK_IF_NULL(no_node);
-					int no = no_node->valueint;
-					
-					cJSON *totalDoc_node = cJSON_GetObjectItem(data_node, "totalDoc"); BREAK_IF_NULL(totalDoc_node);
-					int total_no = totalDoc_node->valueint;
-					
-					cJSON *whichFragment_node = cJSON_GetObjectItem(data_node, "whichFragment"); BREAK_IF_NULL(whichFragment_node);
-					int fragment = whichFragment_node->valueint;
-					
-					cJSON *totalFragment_node = cJSON_GetObjectItem(data_node, "totalFragment"); BREAK_IF_NULL(totalFragment_node);
-					int total_fragment = totalFragment_node->valueint;
-					
-					cJSON *copies_node = cJSON_GetObjectItem(data_node, "copies"); BREAK_IF_NULL(copies_node);
-					int copies = copies_node->valueint;
-					
-					cJSON *printDocId_node = cJSON_GetObjectItem(data_node, "printDocId"); BREAK_IF_NULL(printDocId_node);
-					int print_doc_id = printDocId_node->valueint;
-					
-					cJSON *fragmentsId_node = cJSON_GetObjectItem(data_node, "fragmentsId"); BREAK_IF_NULL(fragmentsId_node);
-					int fragments_id = fragmentsId_node->valueint;
-					
-					ElementType *element = (ElementType*)malloc(sizeof(ElementType));
-					element->print_id = printId;
-					element->seqno = seqno;
-					element->payload = pub_payload;
-					
-					element->no = no;
-					element->total_no = total_no;
-					element->fragment = fragment;
-					element->total_fragment = total_fragment;
-					element->copies_num = NO_VALUE;  
-					element->total_copies = copies; 
-					element->print_doc_id = print_doc_id; 
-					element->fragments_id = fragments_id; 
-			
-					addNode(&linkedList, element);
-					
+					int size = enqueue( &printQueue, pub_payload );
+					log_info("Printjob queue size:%d\n",size);
 					cJSON_Delete(payload_node);
 					break;
 				}
@@ -1306,6 +1012,7 @@ static void usage(void)
     printf("\n");
 }
 
+
 int main(int argc, char *argv[])
 {
     int32_t     res = STATE_SUCCESS;
@@ -1367,8 +1074,7 @@ int main(int argc, char *argv[])
     }
 
 	printId_caches = createCache();
-	//initQueue(&printQueue);
-	initLinkedList(&linkedList);
+	initQueue(&printQueue);
 	pthread_t _printThread;
 	pthread_create(&_printThread, NULL, printThread, NULL);
 	
@@ -1428,8 +1134,12 @@ int main(int argc, char *argv[])
     /* 配置MQTT事件回调函数 */
     aiot_mqtt_setopt(mqtt_handle, AIOT_MQTTOPT_EVENT_HANDLER, (void *)demo_mqtt_event_handler);
 
-	topic_doc = (char *)malloc(1 + strlen(product_key) + 1 + strlen(device_name)+ 18);
-	sprintf(topic_doc,"/%s/%s/user/doc/fragment",product_key,device_name);
+	topic_doc = (char *)malloc(1 + strlen(product_key) + 1 + strlen(device_name)+ 10);
+	*topic_doc = '/';
+	strcat(topic_doc,product_key);
+	strcat(topic_doc,"/");
+	strcat(topic_doc,device_name);
+	strcat(topic_doc,"/user/doc");
 	imei = device_name;
 
 	//bytian; BEGIN

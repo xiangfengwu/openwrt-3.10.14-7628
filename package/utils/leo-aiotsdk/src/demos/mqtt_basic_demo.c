@@ -974,6 +974,13 @@ void *printThread(void *args){
 					if( docUrl_node == NULL ) continue;
 					char *doc_url = docUrl_node->valuestring;
 					
+					cJSON *startPage_node = cJSON_GetObjectItem(data_node, "start_page");
+					if( startPage_node == NULL ) continue;
+					int startPage = startPage_node->valueint;
+					cJSON *endPage_node = cJSON_GetObjectItem(data_node, "end_page");
+					if( endPage_node == NULL ) continue;
+					int endPage = endPage_node->valueint;
+					
 					if( currentTask->copies_num == 1 && currentTask->fragment == 1 ){// 第一个文件的第一份的第一个分片 fragment->no == 1 &&
 						log_info("printId[%d] printing the %d copies.\n", fragment->print_id, fragment->no);
 						iot_replyPrintStatus(fragment, PRINT_STATUS_5_PRINTING);
@@ -1007,6 +1014,9 @@ void *printThread(void *args){
 					log_info("%s\n",print_cmd);
 					system(print_cmd);
 					log_info("Print job sent successfully and file deleted.\n");
+					log_info("sleeping...\n");
+					sleep( endPage - startPage + 1 );
+					log_info("sleeped %d second.\n", endPage - startPage + 1);
 					
 					// 打印完成回复6
 					fragment->copies_num = currentTask->copies_num;
@@ -1031,7 +1041,7 @@ void *printThread(void *args){
 						else {
 							currentTask->copies_num++;// 还没打够份数，开始打下一份
 							currentTask->fragment = 1;
-							log_info("printId[%d] now printing next copies.\n", currentTask->print_id, currentTask->copies_num);
+							log_info("printId[%d] printing the next copies.\n", currentTask->print_id, currentTask->copies_num);
 						}
 					}
 					else {
@@ -1042,7 +1052,7 @@ void *printThread(void *args){
 					// 等服务器推送该分片，确保按序打印
 					log_info("Waiting printId:[%d] no:[%d] fragment:[%d]\n",currentTask->print_id, currentTask->no, currentTask->fragment);
 					// 超时判断
-					if(i++ > 40){
+					if(i++ > 60){
 						// 删除该printId的所有任务
 						log_info("printId:[%d] no:[%d] fragment:[%d] timeout!\n", currentTask->print_id, currentTask->no, currentTask->fragment);
 						iot_replyPrintStatus(currentTask, PRINT_STATUS_7_ERROR);
